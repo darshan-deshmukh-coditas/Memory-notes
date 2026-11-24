@@ -103,7 +103,7 @@ npm run build                        # dist/, bin: actiontrack
 
 ## Current status
 
-Scaffold only: CLI wiring, types, interfaces and tests-as-todos exist; behaviour is **not implemented**. Suggested build order (each step unblocks the next): `parser/header` → `parser/items` → `parser/note` → `dates/resolve` → `owners/resolve` → `dedupe/*` → `store` → `ingest` → `list` → `done` → `email/*` + `followup` → `McpDraftConnector` → sample-folder acceptance tests.
+MVP implemented: all four commands work against the sample folder and `npm run check` is green. Open items are in `docs/TRACEABILITY.md`: the FRD decisions D77+ named by the plans are not yet recorded, and the real Gmail MCP server is not yet smoke-tested. The build order below is the one that was followed. Original order (each step unblocks the next): `parser/header` → `parser/items` → `parser/note` → `dates/resolve` → `owners/resolve` → `dedupe/*` → `store` → `ingest` → `list` → `done` → `email/*` + `followup` → `McpDraftConnector` → sample-folder acceptance tests.
 
 ## Known open points (FRD "Still open" rows, none block a first build)
 

@@ -1,32 +1,77 @@
-import { describe, it } from "vitest";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { readNote, SKIP_REASONS } from "../../src/parser/note.js";
 
-// BRD section 8: edge cases E1 to E4 (NFR-M4). One block each.
-describe("E1 duplicates across meetings (BR-08, FR-E1)", () => {
-  it.todo("same owner + normalised task merge into one item (D28.1)");
-  it.todo("normalisation drops `by ...`, a/an/the, punctuation, extra spaces (D28.2, D36.2)");
-  it.todo("'first' vs 'updated' wireframes stay separate (D28.3, NFR-D5)");
-  it.todo("merged item keeps all sources, latest due date, stays done if any copy is done (D3)");
-  it.todo("no-owner and group items merge within their label; ambiguous only on same first name (D40)");
-  it.todo("re-ingest is idempotent: same ids and statuses (D13, NFR-A9)");
+// E4 and FRD D5, D22, D55, D64, D65 (specs/01-note-parsing rules 3 to 5).
+
+function tmpNote(name: string, content: string | Buffer): string {
+  const dir = mkdtempSync(join(tmpdir(), "at-note-"));
+  const p = join(dir, name);
+  writeFileSync(p, content);
+  return p;
+}
+
+describe("readNote whole-note skips (E4, FR-I8, FR-I9)", () => {
+  it("skips an empty file as `empty file` and never throws (D5.1)", () => {
+    const r = readNote(tmpNote("2026-09-09-empty.md", ""));
+    expect(r).toEqual({ ok: false, skip: { file: "2026-09-09-empty.md", reason: "empty file" } });
+  });
+
+  it("skips a whitespace-only file as `empty file` (D64.1)", () => {
+    const r = readNote(tmpNote("2026-09-09-ws.md", "  \n\t\n"));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.skip.reason).toBe("empty file");
+  });
+
+  it("skips a BOM-only file as `empty file` (Q-17)", () => {
+    const r = readNote(tmpNote("2026-09-09-bom.md", Buffer.from([0xef, 0xbb, 0xbf])));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.skip.reason).toBe("empty file");
+  });
+
+  it("skips non-UTF-8 bytes as `not valid UTF-8` (D55.3)", () => {
+    const r = readNote(tmpNote("scratch.md", Buffer.from([0xff, 0xfe, 0x00, 0x81, 0x80])));
+    expect(r).toEqual({ ok: false, skip: { file: "scratch.md", reason: "not valid UTF-8" } });
+  });
+
+  it("skips a note with no date and no leading filename date as `missing date` (D22.2)", () => {
+    const r = readNote(tmpNote("untitled.md", "- [ ] something\n"));
+    expect(r).toEqual({ ok: false, skip: { file: "untitled.md", reason: "missing date" } });
+  });
+
+  it("skips an unparseable header date and does NOT fall back to the filename (D22.1)", () => {
+    const r = readNote(tmpNote("2026-10-03-sales.md", "Date: sometime last week\n- [ ] x\n"));
+    expect(r).toEqual({ ok: false, skip: { file: "2026-10-03-sales.md", reason: "unparseable date" } });
+  });
+
+  it("uses the filename date when no date key exists (D22.2)", () => {
+    const r = readNote(tmpNote("2026-09-19-offsite.md", "- [ ] x\n"));
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.note.meetingDate).toBe("2026-09-19");
+  });
+
+  it("treats a lone CR as ordinary content, so the date line is unparseable, without a crash (Q-14)", () => {
+    const r = readNote(tmpNote("2026-09-19-cr.md", "Date: 2026-09-19\rstill one line\n"));
+    expect(r).toEqual({ ok: false, skip: { file: "2026-09-19-cr.md", reason: "unparseable date" } });
+  });
+
+  it("reports a missing file as `unreadable file` without throwing (Q-02)", () => {
+    const r = readNote(join(tmpdir(), "definitely-missing-note-xyz.md"));
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.skip.reason).toBe(SKIP_REASONS.unreadableFile);
+  });
 });
 
-describe("E2 no owner or no date (BR-09, FR-E2)", () => {
-  it.todo("Someone/TBD become (no owner); Everyone/Team become (group) (D25)");
-  it.todo("undated items are captured, listed, and never overdue (D1.2)");
-  it.todo("`--due-before` excludes undated items (D31.2)");
-  it.todo("followup --all skips special-label items and prints the count (D16.3)");
-});
-
-describe("E3 same first name (BR-10, FR-E3)", () => {
-  it.todo("bare first name with two matching attendees is ambiguous (D4.2)");
-  it.todo("`Priya N.` resolves by surname initial (D24.1)");
-  it.todo("no attendees: unique roster match resolves, several stay ambiguous (D23)");
-  it.todo("--owner / followup with an ambiguous first name errors and lists choices (D4.4, D31.3)");
-  it.todo("`Anita & Rahul` creates one item per person; `Lena (with Priya)` is Lena (D24)");
-});
-
-describe("E4 malformed notes (BR-11, FR-E4)", () => {
-  it.todo("malformed notes are skipped and reported by file with a reason (D30.1)");
-  it.todo("bad action lines are skipped at line level; rest of note is processed (D5.2)");
-  it.todo("exit code is 1 when anything was skipped (D20.2, D30.3)");
+describe("readNote encoding and line endings (D55)", () => {
+  it("strips a UTF-8 BOM and treats CRLF like LF (D55.1, D55.2)", () => {
+    const text = "﻿Date: 2026-09-01\r\n- [ ] crlf item\r\n";
+    const r = readNote(tmpNote("crlf.md", Buffer.from(text, "utf8")));
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.note.body).not.toContain("\r");
+      expect(r.note.body.startsWith("Date:")).toBe(true);
+    }
+  });
 });

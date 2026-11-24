@@ -1,8 +1,9 @@
-/** Exit codes (FRD D20). */
+/** Exit codes (FRD D20, D62). When several apply the highest wins (D53.1). */
 export const EXIT = {
   OK: 0,
   WARNINGS: 1,
   USAGE: 2,
   GMAIL: 3,
+  INTERNAL: 4,
 } as const;
 export type ExitCode = (typeof EXIT)[keyof typeof EXIT];
