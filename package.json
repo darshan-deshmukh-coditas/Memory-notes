@@ -1,0 +1,28 @@
+{
+  "name": "actiontrack",
+  "version": "0.1.0",
+  "description": "CLI that tracks action items from meeting notes and drafts follow-up emails (never sends).",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "bin": { "actiontrack": "./dist/cli/index.js" },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsx src/cli/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "commander": "^13.1.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}
