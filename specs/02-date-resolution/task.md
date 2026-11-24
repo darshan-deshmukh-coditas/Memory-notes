@@ -22,7 +22,7 @@ Decision rule: tasks marked **[OQ]** follow the settled decision with the matchi
 - [ ] T11 Add failing tests for flagged wording: TC-28, TC-36, TC-37, TC-58, TC-65, TC-66, TC-67. Spec: D46.2, D66.3, D8.4, NFR-A7. Depends: T04.
 - [ ] T12 Add failing tests for rollover edges: TC-23, TC-24, TC-63, TC-70. Spec: D34.1, D33.4. Depends: T04.
 - [ ] T13 Add failing tests for invalid and leap dates: TC-61, TC-62, TC-64, TC-57. Spec: D10.1, D33.1, NFR-U3. **[OQ]** Per decision OQ-9, OQ-10. Depends: T01, T04.
-- [ ] T14 Add failing tests for open-question defaults: TC-59, TC-60, TC-53, TC-56, TC-69, TC-70, TC-71. Spec: D9.1, D33.2, D31.6, NFR-U3, D66.1. **[OQ]** Per decision OQ-3, OQ-5, OQ-6, OQ-13, OQ-15. Depends: T01, T04.
+- [ ] T14 Add failing tests for decision-driven cases: TC-59, TC-60, TC-53, TC-56, TC-69, TC-70, TC-71. Spec: D9.1, D33.2, D31.6, NFR-U3, D66.1. **[OQ]** Per decision OQ-3, OQ-5, OQ-6, OQ-13, OQ-15. Depends: T01, T04.
 - [ ] T15 Add failing robustness and determinism tests: TC-38, TC-39, TC-40, TC-47. Spec: D8.4, NFR-D2, NFR-D3, D44.1. Depends: T04.
 - [ ] T16 Add failing status tests: TC-46, TC-49. Spec: D44.1. Depends: T05.
 - [ ] T17 Add failing `parseCliDate` negative tests: TC-52, TC-54, TC-55. Spec: D38.1, NFR-U3. Depends: T06.

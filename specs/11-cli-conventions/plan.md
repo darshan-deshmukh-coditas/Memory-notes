@@ -115,7 +115,7 @@ Out of scope:
 
 ## Decisions
 
-Each decision below is settled. O-1 and O-7 to O-10 were answered by the user; the others take the recommended default from the earlier open-question list.
+Each decision below is settled. O-1 and O-7 to O-10 were answered by the user; the others were settled from the earlier list of open points.
 
 - **O-1** `--store` beats `ACTIONTRACK_STORE`, which beats the default path.
 - **O-2** An empty `ACTIONTRACK_STORE` is treated as unset.

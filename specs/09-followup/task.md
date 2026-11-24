@@ -4,9 +4,9 @@ Order matters. Each task lists the spec or FRD ID it satisfies, the file it touc
 
 Conventions: `npm test` for the red and green runs, `npm run check` at the end. No edits to `docs/FRD.md` except T02. No edits to `src/email/connector.ts` interface beyond what is stated. No edits to `tests/unit/safety.test.ts` except re-running it.
 
-## Phase 0: gate on open questions
+## Phase 0: record decisions
 
-- [x] **T01** Requester's answers for `plan.md` Q1 to Q23 are recorded in its "Decisions" section. Q1, Q3, Q5, Q6, Q8, Q9 and Q15 were answered by the requester; the rest take the plan's default. Satisfies: CLAUDE.md "stop and ask". File: none. Tests: none. Depends on: none. Blocks everything below that cites a decision TC.
+- [x] **T01** Requester's answers for `plan.md` Q1 to Q23 are recorded in its "Decisions" section. Q1, Q3, Q5, Q6, Q8, Q9 and Q15 were answered by the requester; the rest are settled in the same section. Satisfies: CLAUDE.md "stop and ask". File: none. Tests: none. Depends on: none. Blocks everything below that cites a decision TC.
 - [ ] **T02** Record the answers as new decisions D77 and later in `docs/FRD.md` section 11, one per answer, each naming the earlier "Still open" row it closes (D19.5 for Q6 and Q7, D16.3 for Q8, D6.3 for Q9 and Q10, D58.2 for Q12, D74.1 for Q19). Satisfies: CLAUDE.md workflow step 1. File: `docs/FRD.md`. Tests: none. Depends on: T01.
 
 ## Phase 1: fixtures and red tests
@@ -35,10 +35,10 @@ Conventions: `npm test` for the red and green runs, `npm run check` at the end. 
 
 - [ ] **T19** Implement argument validation: exactly one of `<owner>` or `--all` (D73.1), and the four special tokens as usage errors (D73.2), returning exit 2 with the required message. File: `src/cli/commands/followup.ts`. Tests: TC-22, TC-23, TC-24. Depends on: T11.
 - [ ] **T20** Implement `<owner>` resolution through the spec 03 resolver: full name, first name matching one, first name matching several gives exit 2 with the choices (D4.4). Unknown name gives exit 2 (Q1). File: `src/cli/commands/followup.ts`. Tests: TC-11, TC-38. Depends on: T19, spec 03 done.
-- [ ] **T21** Implement the store read path: missing store treated as empty (Q3); corrupt store gives exit 2 and no write (D59.4). File: `src/cli/commands/followup.ts` via spec 05 loader. Tests: TC-35, TC-44. Depends on: T19, spec 05 done.
+- [ ] **T21** Implement the store read path: missing store gives exit 2 with a message telling the user to run `ingest` first, and no draft (Q3); corrupt store gives exit 2 and no write (D59.4). File: `src/cli/commands/followup.ts` via spec 05 loader. Tests: TC-35, TC-44. Depends on: T19, spec 05 done.
 - [ ] **T22** Implement `--all` grouping: open and overdue items per resolved owner; count items with label owners (D16.3, D25.3, D42.3) and print the count. File: `src/cli/commands/followup.ts`. Tests: TC-08, TC-10, TC-39. Depends on: T17, T21.
 - [ ] **T23** Implement the "nothing to chase" path: no draft, message, exit 0 for `<owner>` and `--all`; `--force` makes no difference here (Q21). File: `src/cli/commands/followup.ts`. Tests: TC-09, TC-37, TC-55. Depends on: T22.
-- [ ] **T24** Implement the env var check `ACTIONTRACK_GMAIL_MCP_CMD` before the first draft, only when at least one draft would be attempted (Q5, Q22). Exit 3, message naming the variable. File: `src/cli/commands/followup.ts` (reads a value passed in `Deps`; the real env read stays in `cli/index.ts`). Tests: TC-26. Depends on: T23.
+- [ ] **T24** Implement the env var check `ACTIONTRACK_GMAIL_MCP_CMD` before any owner is processed or any draft is created (Q5, Q22). Exit 3, message naming the variable. File: `src/cli/commands/followup.ts` (reads a value passed in `Deps`; the real env read stays in `cli/index.ts`). Tests: TC-26. Depends on: T23.
 - [ ] **T25** Implement the repeat check: any prior `drafts` record for the resolved owner name (exact match, Q6). Warn with earlier draft id and date, create no draft, count as a warning (exit 1). Skip the check when `--force`. File: `src/cli/commands/followup.ts`. Tests: TC-16, TC-40, TC-41. Depends on: T22.
 - [ ] **T26** Implement `--force`: create a new draft and add a new record; never touch earlier records or the Gmail draft (D51.3). File: `src/cli/commands/followup.ts`. Tests: TC-17. Depends on: T25.
 - [ ] **T27** Implement recipient resolution: attendee email from the most recent note that has one (Q9), then owners file (case-insensitive full name, Q10, attendee wins D18.2), else no `to` key and a warning (D6.3). Conflicting attendee emails give the most recent and a warning (D56.2). File: `src/cli/commands/followup.ts`. Tests: TC-12 to TC-15, TC-57, TC-56. Depends on: T22.
@@ -78,7 +78,7 @@ Conventions: `npm test` for the red and green runs, `npm run check` at the end. 
 ## Definition of done
 
 - [ ] Every `followup` TC in `testcases.md` is either green or explicitly marked as owned by spec 03, 05 or 10 and green in that spec.
-- [ ] Every "to confirm" TC has its answer recorded as a decision in `docs/FRD.md` (D77 or later), or its default was accepted by the requester.
+- [ ] Every decision Q1 to Q23 cited by a TC is recorded as a decision in `docs/FRD.md` (D77 or later).
 - [ ] TC-29 and TC-30 (`tests/unit/safety.test.ts`) pass and that file is unchanged.
 - [ ] No code path calls any method on the connector except `createDraft`; no retry; no send option (FR-F5, AC-F3, NFR-S1, NFR-S2).
 - [ ] Exit codes follow `plan.md` requirement map: 0, 1, 2, 3, 4 with the highest-wins rule (D53.1).

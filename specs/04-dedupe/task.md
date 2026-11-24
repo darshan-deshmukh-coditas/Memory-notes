@@ -4,10 +4,10 @@ Order matters. Each task lists the requirement it satisfies, the file it touches
 
 Rules for all tasks: test first (red), then implement (green), then refactor. Use the `mattpocock-skills:tdd` workflow. Keep imports `.js`-suffixed, no `any`, pure functions, injected clock if needed.
 
-## Phase 0: confirm open points
+## Phase 0: record settled decisions
 
 - [ ] **T01** Record Q1 to Q15 as decisions D77 to D91 (per decision Q1 to Q15, `plan.md`) in `docs/FRD.md` in the same change, as CLAUDE.md requires. Dependency: none. Blocks: T05 onwards for the points listed in the tasks below.
-- [ ] **T02** Update `plan.md` "Open questions" with the answers (mark each as confirmed). Dependency: T01.
+- [ ] **T02** Mark Q1 to Q15 as settled in `plan.md` Decisions (D77 to D91). Dependency: T01.
 
 ## Phase 1: red tests for normalisation
 
@@ -84,7 +84,7 @@ Rules for all tasks: test first (red), then implement (green), then refactor. Us
 - [ ] Every `it.todo` in `tests/unit/edge-cases.test.ts` under "E1 duplicates" is a real test whose name cites its FRD/NFRD ID, and it passes.
 - [ ] `normalizeTask` and `mergeItem` have no `NotImplementedError` throw left.
 - [ ] Every row in `testcases.md` has a passing test, except T36 which waits for specs 05 and 06 and is marked skipped with a reason.
-- [ ] Q1 to Q15 are each confirmed by the user and recorded as decisions in `docs/FRD.md`.
+- [ ] D77 to D91 (Q1 to Q15) are each recorded as decisions in `docs/FRD.md`.
 - [ ] `docs/TRACEABILITY.md` status for BR-08 / E1 is `done` (or `wip` with the reason written in the spec).
 - [ ] `npm run check` passes on Windows, macOS and Linux (NFR-C1 is run by CI, not by this spec alone).
 - [ ] No source note under `notes/` is modified (D32.1 spirit; this spec never writes notes).

@@ -122,7 +122,7 @@ Q2. A line removed from a note keeps its item and its source record. Nothing is 
 Q3. A re-run with no change does not rewrite the store file.
 Q4. If every `.md` note is skipped: exit 1 with the skip report; the store is created empty if missing (D59.3). Covered by TC-71.
 Q5. A missing or unreadable notes folder exits 2, not 4 (D20.3).
-Q6. Unreadable single note (I/O error, not malformed): the plan gives no default, so no decision is recorded here.
+Q6. A single note that exists but cannot be read (permission error or locked) is skipped with reason `unreadable file`, the sixth skip reason from spec 01 (decision Q-02).
 Q7. Ignored line kinds: table-row, action-line, block-quote, code-fence, html-comment, numbered-checkbox. Plain prose is not counted. A checkbox-looking line inside a fence or comment counts once, under its own kind.
 Q8. The same owner and task twice in one note is merged and counted as merged. Covered by TC-48.
 Q9. Items added = new ids this run. Merged = lines folded into an existing item, including every line on a re-run, so a second run reports 0 added.

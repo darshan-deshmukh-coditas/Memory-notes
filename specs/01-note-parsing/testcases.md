@@ -2,7 +2,7 @@
 
 Conventions
 - Test names start with the ID in brackets, for example `[D21.1] reads YAML front matter`.
-- `Q-nn` rows test a recommended default from `plan.md` (open question). Their names must be renamed to a new decision ID (D77 or later) once the user confirms, in the same change as the decision.
+- `Q-nn` rows test the settled decision of the same ID in `plan.md` (Decisions section). Their names carry the decision ID; once the decision is recorded as D77 or later in `docs/FRD.md`, the name uses that D-number, in the same change as the decision.
 - Type `unit` = pure function or readNote on a temp file. `property` = seeded loop of generated inputs (no new dependency). `acceptance` = sample `notes/` folder.
 - "Never throws" rows assert the returned value, not just the absence of an exception.
 - Fixture paths are under `tests/fixtures/notes/` unless marked "temp" (created inside the test, see Fixtures needed).
@@ -37,8 +37,8 @@ Conventions
 | TC-24 | D55.1 | tests/unit/edge-cases.test.ts | [D55.1] UTF-8 BOM is stripped and is not a failure | unit | temp file: BOM + `labelled-basic.md` content | ok result, same as without BOM |
 | TC-25 | D55.2 | tests/unit/edge-cases.test.ts | [D55.2] CRLF gives the same note and items as LF | unit | `labelled-basic.md` as LF, and the same text as CRLF (temp) | identical meetingDate, attendees, items, line numbers |
 | TC-26 | NFR-R1 | tests/unit/edge-cases.test.ts | [NFR-R1] readNote never throws for a missing path or a directory path | unit | path that does not exist; path that is a directory | ok:false with a SkipReport; no exception |
-| TC-27 | NFR-R2, NFR-R1 | tests/unit/edge-cases.test.ts | [NFR-R2] every skip has file and a fixed reason, over generated inputs | property | 200 seeded random byte buffers written to temp files | each result ok:true, or ok:false with file set and reason in the five strings; no throw |
-| TC-28 | D65.1 | tests/unit/edge-cases.test.ts | [D65.1] skip reasons are exactly the five fixed strings | unit | constant from `note.ts` and extractItems skip output | set equals `{empty file, not valid UTF-8, missing date, unparseable date, empty action item}` |
+| TC-27 | NFR-R2, NFR-R1 | tests/unit/edge-cases.test.ts | [NFR-R2] every skip has file and a fixed reason, over generated inputs | property | 200 seeded random byte buffers written to temp files | each result ok:true, or ok:false with file set and reason in the six strings (D65.1 as amended by Q-02); no throw |
+| TC-28 | D65.1 | tests/unit/edge-cases.test.ts | [D65.1] skip reasons are exactly the six fixed strings | unit | constant from `note.ts` and extractItems skip output | set equals `{empty file, not valid UTF-8, missing date, unparseable date, unreadable file, empty action item}` |
 | TC-29 | NFR-R5 | tests/unit/edge-cases.test.ts | [NFR-R5] 1 MB single-line note is read without error | unit | temp file: one 1 MB line with a checkbox at the end | ok; item found; no throw |
 | TC-30 | NFR-SEC4 | tests/unit/edge-cases.test.ts | [NFR-SEC4] shell text in the date value is an unparseable date, not run | unit | `Date: 2026-09-09; rm -rf .` with a spy on `child_process` and `fs` writes | skip reason `unparseable date`; spies called 0 times |
 | TC-31 | D26.1, FR-I4 | tests/unit/ingest-parsing.test.ts | [D26.1] `-`, `*`, `+` bullets with `[ ]`, `[x]`, `[X]` give items in order | unit | body with one line per bullet and mark | items in source order; count matches |

@@ -1,6 +1,6 @@
 # Test cases 04: Duplicate handling
 
-One row per acceptance bullet in `spec.md`, each sample-evidence row, and each open-point default in `plan.md` (Q1 to Q15). Test names must start with the bracketed ID. Type: `unit`, `acceptance` (sample folder or fixtures end to end), or `property` (fixed list of inputs, looped; no new dependency, per CLAUDE.md). Rows marked **negative** check that different work is NOT merged or that a rule does not over-fire.
+One row per acceptance bullet in `spec.md`, each sample-evidence row, and each settled decision in `plan.md` (D77 to D91, Q1 to Q15). Test names must start with the bracketed ID. Type: `unit`, `acceptance` (sample folder or fixtures end to end), or `property` (fixed list of inputs, looped; no new dependency, per CLAUDE.md). Rows marked **negative** check that different work is NOT merged or that a rule does not over-fire.
 
 Unit tests go in `tests/unit/edge-cases.test.ts` (the E1 block already exists there). Acceptance tests go in `tests/acceptance/sample-notes.test.ts`.
 
@@ -43,9 +43,9 @@ Unit tests go in `tests/unit/edge-cases.test.ts` (the E1 block already exists th
 | TC-33 | NFR-A5, FR-E1 | tests/acceptance/sample-notes.test.ts | `[NFR-A5] Priya Nair quote merges into one done item with 3 sources` | acceptance | Fixtures `priya-2026-09-01.md`, `priya-2026-09-08.md`, `priya-2026-09-15.md` (see Fixtures) | One item, status `done`, 3 sources, due = latest dated copy per D3.4 (value set per the note below). |
 | TC-34 | NFR-D5, D28.3 | tests/acceptance/sample-notes.test.ts | `[NFR-D5] first and updated wireframes stay two items` | acceptance | Fixtures `wireframes-first.md`, `wireframes-updated.md` | Two items. |
 | TC-35 | NFR-A9, D13.1 | tests/acceptance/sample-notes.test.ts | `[NFR-A9] ingest twice gives same items, ids and statuses` | acceptance | Fixtures folder, two runs | Second run changes nothing. Skipped with reason until specs 05 and 06 land. |
-| TC-36 | NFR-R1 | tests/unit/edge-cases.test.ts | `[NFR-R1] mergeItem does not throw on empty store or empty task text` | unit, negative | Empty store; incoming with task `""` | Returns a result (`unchanged` or `add` per Q5); no exception. |
-| TC-37 | D28.2 (Q1) | tests/unit/edge-cases.test.ts | `[D28.2] articles attached to punctuation follow the agreed order` | unit | `"the."` and `"(a) review"` | Output per Q1 decision (default: `""` and `"review"`). |
-| TC-38 | D28.2 (Q2) | tests/unit/edge-cases.test.ts | `[D28.2] hyphen becomes a space; apostrophe is removed` | unit | `"follow-up"`, `"don't"` | `"follow up"`, `"dont"` (default; confirm). |
+| TC-36 | NFR-R1 | tests/unit/edge-cases.test.ts | `[NFR-R1] mergeItem does not throw on empty store or empty task text` | unit, negative | Empty store; incoming with task `""` | Returns a result (`unchanged` or `add` per D81); no exception. |
+| TC-37 | D28.2 (D77) | tests/unit/edge-cases.test.ts | `[D28.2] articles attached to punctuation follow the agreed order` | unit | `"the."` and `"(a) review"` | Output per D77: `""` and `"review"`. |
+| TC-38 | D28.2 (D78) | tests/unit/edge-cases.test.ts | `[D28.2] hyphen becomes a space; apostrophe is removed` | unit | `"follow-up"`, `"don't"` | `"follow up"`, `"dont"` per D78. |
 | TC-39 | D3.3 (Q6) | tests/unit/edge-cases.test.ts | `[D3.3] same task on two lines of one note gives two sources` | unit | Same file, lines 4 and 9 | Two source records for that file. |
 | TC-40 | D52.1 (Q13) | tests/unit/edge-cases.test.ts | `[D52.1] existing duplicates already in the store are not merged or removed` | unit, negative | Store with two items, same key | Both kept; new copy matches the lower id. |
 | TC-41 | D30.2 (Q15) | tests/unit/edge-cases.test.ts | `[D30.2] a new source on an existing item counts as merged; an unchanged re-read does not` | unit | One new copy; one re-read copy | `merged: true` for first; `unchanged` for second. |

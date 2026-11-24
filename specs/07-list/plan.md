@@ -95,7 +95,7 @@ Show stored action items, narrowed by owner, status and due date, as a plain tab
 - **Spec 05 (store):** `loadStore` (missing file = empty store, corrupt or wrong version = exit 2), the `items` and `roster` shape, and `sources` records.
 - **Spec 06 (ingest):** needed only for the sample-folder acceptance test (TC-11). Unit tests use a fixture store file.
 - **Spec 11 (CLI conventions):** `--today` parsing, stdout/stderr split, exit-code mapping.
-- **Spec 08 (done):** only to confirm that `done` items are excluded by default in the end-to-end flow.
+- **Spec 08 (done):** only to check that `done` items are excluded by default in the end-to-end flow.
 
 ## Risks
 - **Midnight and time zones.** "Today" is the system's local date (D1.3). An item due on the day before a local midnight may change status between two runs. Stored dates are plain dates with no time zone, so the comparison itself is safe. The risk is in how the clock is read. Mitigation: read the clock once per command and pass `today` down; test the boundary with a fixed clock (TC-62).

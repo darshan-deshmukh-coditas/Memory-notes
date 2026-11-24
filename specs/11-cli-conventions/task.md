@@ -1,12 +1,12 @@
 # Tasks: spec 11, CLI conventions
 
 Order follows the CLAUDE.md workflow: find the ID, turn the `it.todo` into a failing test (red), implement (green), refactor, update `docs/TRACEABILITY.md`, run `npm run check`.
-Test IDs (TC-xx) are defined in `testcases.md`. Open points O-1 to O-16 are in `plan.md`. Do not implement a task whose open point is still unconfirmed, except on the recommended default marked "to confirm", and only once the user has said so.
+Test IDs (TC-xx) are defined in `testcases.md`. Decisions O-1 to O-16 are settled and recorded in the Decisions section of `plan.md`. Implement each task against the decision ID it names.
 Dependency column: a task can start only when the listed tasks are done.
 
-## Phase 0: confirm open points (blocking for the parts that depend on them)
+## Phase 0: record decisions (blocking for the parts that depend on them)
 
-- [ ] **T01** Ask the user to confirm or change O-1 to O-16 (`plan.md`). Record each answer as a new decision `D77` or later in `docs/FRD.md` section 11, in the same change as the code. Spec: D77+ (new). File: `docs/FRD.md`. Test: none. Depends: none.
+- [ ] **T01** Record each decision O-1 to O-16 (`plan.md` Decisions section) as a new decision `D77` or later in `docs/FRD.md` section 11, in the same change as the code. Spec: D77+ (new). File: `docs/FRD.md`. Test: none. Depends: none.
 - [ ] **T02** Confirm the spec 05 and spec 09 statements that O-1 and O-10 touch, so the decision does not contradict them. Spec: D17.2, D59.1. File: `docs/FRD.md` (read only). Test: none. Depends: T01.
 
 ## Phase 1: red (failing tests first)
@@ -73,7 +73,7 @@ Dependency column: a task can start only when the listed tasks are done.
 - [ ] **T47** Run `npm run typecheck`, then `npm test`, then `npm run check`. All must pass. Test: TC-01..TC-55. Depends: T45, T46.
 - [ ] **T48** Manual smoke on Windows: `npm run dev -- --help`, `npm run dev -- list --today 2026-02-30` (exit 2), `npm run dev -- ingest notes` (exit 0 or 1 per sample). Record results in the PR. Test: TC-12, TC-14, TC-19. Depends: T47.
 - [ ] **T49** Confirm the sample acceptance checks that depend on exit codes (NFR-A1, NFR-A2 exit 1, NFR-A9) are still green after the change. File: `tests/acceptance/`. Test: TC-20, TC-30. Depends: T47.
-- [ ] **T50** Record every answered open point (T01) in `docs/FRD.md` section 11 and in `plan.md` with "confirmed" in place of "to confirm". Depends: T01, T47.
+- [ ] **T50** Record every decision O-1 to O-16 (`plan.md` Decisions section, T01) in `docs/FRD.md` section 11 as D77 or later. Depends: T01, T47.
 
 ## Definition of done
 
@@ -83,7 +83,7 @@ Dependency column: a task can start only when the listed tasks are done.
 - [ ] Exit codes come only from `src/cli/index.ts` (TC-40 green). `console.*` appears only in `src/cli/index.ts` (TC-27, TC-40).
 - [ ] `--store` and `--today` are accepted by all four commands (TC-11). `--today` invalid is exit 2 (TC-12, TC-13, TC-14).
 - [ ] No log file is created by any command, including failures (TC-29).
-- [ ] Each open point O-1 to O-16 is answered, recorded as D77 or later in `docs/FRD.md`, and its test has been run.
+- [ ] Each decision O-1 to O-16 (`plan.md` Decisions section) is recorded as D77 or later in `docs/FRD.md`, and its test has been run.
 - [ ] `docs/TRACEABILITY.md` status updated for the cross-cutting row, NFR-U1..U6, NFR-O3 and NFR-C1.
 - [ ] `npm run check` passes. The Windows smoke run (T48) is recorded. NFR-C1 CI matrix is either green or recorded as a manual step.
 - [ ] No file outside `specs/11-cli-conventions/` (and the files the tasks name) is changed, and no spec in another folder is edited.

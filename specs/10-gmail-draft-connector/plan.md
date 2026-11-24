@@ -59,7 +59,7 @@ Make the only door to Gmail create a draft and nothing else. The app sees `Draft
 ## Risks
 | Risk | Effect | Mitigation |
 |---|---|---|
-| Real server's tool name or argument shape differs from `create_draft {to?, subject, body}` | Every real call fails with exit 3 | Manual smoke (T24) confirms before the spec is closed. A user-side adapter is allowed (FR-D75.2). Automated tests use the fake only. |
+| Real server's tool name or argument shape differs from `create_draft {to?, subject, body}` | Every real call fails with exit 3 | Manual smoke (T38) confirms before the spec is closed. A user-side adapter is allowed (FR-D75.2). Automated tests use the fake only. |
 | Spawn on Windows: `npx` is `npx.cmd`, and paths can contain spaces | `ENOENT` or a broken command line | Test a quoted Windows path (TC-31). Parsing rule per decision Q4 (shell string). |
 | Child hangs and keeps the process alive | Tool never exits; `--all` runs forever | 60 s timeout with kill (FR-D76.1); test that the pid is gone (TC-20). |
 | Orphan server processes after an error | Leaked processes | `finally` stop on every path (TC-24). |

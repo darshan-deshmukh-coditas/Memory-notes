@@ -1,13 +1,13 @@
 # Tasks: 05 Item store
 
-Order matters. Work red, then green, then refactor, per CLAUDE.md. Test IDs (TC-nn) refer to `testcases.md`. "Satisfies" lists the spec or FRD IDs. Open points are in `plan.md` section "Open questions and assumptions"; tasks marked **(gate)** must not start until those points are answered.
+Order matters. Work red, then green, then refactor, per CLAUDE.md. Test IDs (TC-nn) refer to `testcases.md`. "Satisfies" lists the spec or FRD IDs. Decisions are in `plan.md` section "Decisions"; tasks marked **(gate)** must not start until those decisions are recorded in `docs/FRD.md`.
 
 Format: `- [ ] Txx | Satisfies | File | Test | Depends`
 
 ## A. Decisions and types (no behaviour)
 
-- [ ] T01 | S5-Q01..S5-Q19 | user | none | none: answered; recorded per decision S5-Q01 to S5-Q20 in `plan.md` section "Decisions".
-- [ ] T02 | CLAUDE.md workflow step 1 | `docs/FRD.md` section 11 | none | T01 **(gate)**: record confirmed answers as D77, D78, ... in the same change. Verify every ID cited in `specs/05-store/*.md` exists in FRD, NFRD or the spec.
+- [ ] T01 | S5-Q01..S5-Q20 | user | none | none: answered; recorded per decision S5-Q01 to S5-Q20 in `plan.md` section "Decisions".
+- [ ] T02 | CLAUDE.md workflow step 1 | `docs/FRD.md` section 11 | none | T01 **(gate)**: record the decisions as D77, D78, ... in the same change. Verify every ID cited in `specs/05-store/*.md` exists in FRD, NFRD or the spec.
 - [ ] T03 | D51.1, rule 4, rule 6 | `src/domain/types.ts` | none (compile check) | T02: add `itemIds: number[]` to `DraftRecord`; add `RosterEntry {name, email?, meetingDate?}` and `roster: RosterEntry[]` to `StoreFile`. Shapes per S5-Q08, S5-Q09. No `any`.
 - [ ] T04 | D62.1, D59.4, D69.2 | `src/domain/exit-codes.ts`, `src/domain/errors.ts` | compile check | T03: add `EXIT.INTERNAL = 4` (S5-Q19). Add `StoreCorruptError` (exit 2) and `StoreIoError` (exit 4) extending `ActiontrackError`. Keep domain free of logic.
 - [ ] T05 | NFR-M1, NFR-R3 | `src/store/store.ts` | TC-21..TC-23, TC-26 (fault seam) | T04: add an optional `fs` adapter parameter to `loadStore(path, fs?)` and `saveStore(path, store, fs?)` with a type `StoreFs` (writeFile, fsync, rename, unlink, mkdir, readFile). Default is `node:fs`. Behaviour unchanged; stubs still throw `NotImplementedError`.
@@ -40,7 +40,7 @@ Replace the three `it.todo` lines in the `store` describe block of `tests/unit/c
 - [ ] T24 | NFR-R3 (no partial writes) | `src/store/store.ts` `saveStore` serialiser | TC-30 | T20. `JSON.stringify(store, null, 2) + "\n"` in fixed key order; UTF-8, no BOM.
 - [ ] T25 | D59.2, NFR-R3, D59.1 | `src/store/store.ts` `saveStore` | TC-20, TC-24, TC-27, TC-29 | T24, T19. `mkdir -p`; write temp in same directory; fsync; rename. Temp name per S5-Q11.
 - [ ] T26 | NFR-R3, D62.1 | `src/store/store.ts` `saveStore` | TC-21, TC-22, TC-23 | T25. On any failure, best-effort unlink temp, rethrow as `StoreIoError` (exit 4). Previous file untouched.
-- [ ] T27 | S5-Q13 | `src/store/store.ts` `saveStore` | TC-26 | T26. Bounded retry (3 attempts, 100 and 200 ms) only for EPERM, EBUSY on rename; then exit 4.
+- [ ] T27 | S5-Q13 | `src/store/store.ts` `saveStore` | TC-26 | T26. Bounded retry (3 attempts in total, with waits of 100 ms and then 200 ms between them) only for EPERM, EBUSY on rename; then exit 4.
 - [ ] T28 | NFR-R3, S5-Q11 | `src/store/store.ts` `loadStore` | TC-28, TC-55 | T26. Stale `*.tmp` files are ignored and never deleted by save.
 - [ ] T29 | D14.1, D14.2, D69.1, S5-Q14 | `src/store/store.ts` `allocateIds` | TC-31..TC-35 | T14. Pure function: takes store and count, returns ids and updated store with `nextId` advanced. Never touches existing item ids.
 - [ ] T30 | S5-Q14 | `src/store/store.ts` `saveStore` / ingest contract note | TC-36 | T25, T29. Verify ids from a failed save are not persisted; document in code comment that callers must print ids after a successful save.
@@ -75,7 +75,7 @@ Replace the three `it.todo` lines in the `store` describe block of `tests/unit/c
 
 ## Definition of done
 
-- [ ] Every open point in `plan.md` is answered or its default confirmed, and recorded as D77+ in `docs/FRD.md` (T01, T02).
+- [ ] Every decision in `plan.md` section "Decisions" (S5-Q01 to S5-Q20, D77 to D96) is recorded in `docs/FRD.md` (T01, T02).
 - [ ] Every TC row in `testcases.md` has a real test with its ID in brackets, or is an explicit `it.todo` blocked on a named cross-spec task (TC-09 only).
 - [ ] All non-blocked store tests are green on Windows, macOS and Linux.
 - [ ] Fault-injection tests prove that a failed write or rename leaves the previous file byte-identical (TC-21 to TC-23, TC-26).

@@ -16,9 +16,9 @@ Negative cases are marked **(neg)**. "Store unchanged" means the store file's SH
 | TC-04 | Behaviour 1 | `tests/unit/commands.test.ts` | `[TC-04] Behaviour 1 non-numeric id is a usage error (neg)` | unit | `done abc` | store unchanged | 2 |
 | TC-05 | Behaviour 1 | `tests/unit/commands.test.ts` | `[TC-05] Behaviour 1 fractional id is a usage error (neg)` | unit | `done 1.5` | store unchanged | 2 |
 | TC-06 | Behaviour 1 | `tests/unit/commands.test.ts` | `[TC-06] Behaviour 1 missing id is a usage error (neg)` | integration | `done` with no argument | usage message; store unchanged | 2 |
-| TC-07 | Q4 (to confirm) | `tests/unit/commands.test.ts` | `[TC-07] Q4 leading zero id is a usage error (neg)` | unit | `done 01` | store unchanged. Default per plan Q4; change if the user chooses otherwise | 2 |
-| TC-08 | Q3 (to confirm) | `tests/unit/commands.test.ts` | `[TC-08] Q3 two ids in one call is a usage error (neg)` | unit | `done 1 2` | neither item changed | 2 |
-| TC-32 | Q5 (to confirm) | `tests/unit/commands.test.ts` | `[TC-32] Q5 id beyond safe integer is unknown id (neg)` | unit | `done 9007199254740993` | store unchanged | 2 |
+| TC-07 | Q4 | `tests/unit/commands.test.ts` | `[TC-07] Q4 leading zero id is a usage error (neg)` | unit | `done 01` | store unchanged. Per plan Q4 | 2 |
+| TC-08 | Q3 | `tests/unit/commands.test.ts` | `[TC-08] Q3 two ids in one call is a usage error (neg)` | unit | `done 1 2` | neither item changed | 2 |
+| TC-32 | Q5 | `tests/unit/commands.test.ts` | `[TC-32] Q5 id beyond safe integer is unknown id (neg)` | unit | `done 9007199254740993` | store unchanged | 2 |
 
 ## B. Marking done (core behaviour)
 
@@ -30,14 +30,14 @@ Negative cases are marked **(neg)**. "Store unchanged" means the store file's SH
 | TC-12 | FR-D32.2, FR-D4 | `tests/unit/commands.test.ts` | `[TC-12] D32.2 unknown id exits 2 and store is unchanged (neg)` | unit | store with items 1 and 2; `done 999`. Acceptance bullet D32.2 | stderr message; store SHA-256 unchanged | 2 |
 | TC-13 | D14.2, FR-D32.2 | `tests/unit/commands.test.ts` | `[TC-13] D14.2 id never assigned is unknown, not reused (neg)` | unit | store whose highest id is 5; `done 6` | store unchanged; no item created | 2 |
 | TC-14 | D59.3, Acceptance bullet D59.3 | `tests/unit/commands.test.ts` | `[TC-14] D59.3 done with no store file exits 2 (neg)` | integration | temp dir with no store file; `done 1` | no store file created | 2 |
-| TC-15 | FR-D32.3, Behaviour 4 | `tests/unit/commands.test.ts` | `[TC-15] D32.3 already-done item prints a message, exits 0, store unchanged` | integration | item 1 already done; `done 1` twice | message says it is already done; second run store SHA-256 unchanged (Q1 default) | 0 |
+| TC-15 | FR-D32.3, Behaviour 4 | `tests/unit/commands.test.ts` | `[TC-15] D32.3 already-done item prints a message, exits 0, store unchanged` | integration | item 1 already done; `done 1` twice | message says it is already done; second run store SHA-256 unchanged (Q1) | 0 |
 | TC-16 | FR-D32.1, FR-D5, Acceptance bullet D32.1 | `tests/unit/commands.test.ts` | `[TC-16] D32.1 source note file is byte-identical after done` | integration | temp copy of `tests/fixtures/notes`; ingest; hash every `.md` file; `done 1` on an item from a note; hash again | every source note SHA-256 identical before and after | 0 |
 | TC-17 | NFR-D6, Acceptance bullet NFR-D6, FR-D3 | `tests/unit/commands.test.ts` | `[TC-17] NFR-D6 done status survives a new process` | integration | Process A: `done 1`. Process B (new child): `list --status done --json` | item 1 present with status done | 0 |
 | TC-18 | D3.5, D13.2, FR-D6, Acceptance bullet D3.5 | `tests/unit/commands.test.ts` | `[TC-18] D3.5 re-ingest does not reopen a done item` | integration | ingest folder; `done 1`; ingest same folder again | item 1 still done, same id, no duplicate | 0 (ingest exit 0 or 1 per spec 06) |
 | TC-19 | Behaviour 8, D3.2, D3.3, D3.4, D3.5 | `tests/unit/commands.test.ts` | `[TC-19] Behaviour 8 merged item with three sources is one item marked done` | integration | Fixture: Priya Nair "send the revised quote to Acme" in three notes, all open (sample 2026-09-15 line changed from `[x]` to `[ ]` in the fixture copy). `done <id>` | one item; status done; three sources kept | 0 |
 | TC-33 | D3.5 (spec 04 rule 11), D13.2 | `tests/unit/commands.test.ts` | `[TC-33] D3.5 later open copy merges into a done item and does not reopen it` | integration | ingest note A with item 1; `done 1`; add note B with the same owner and task as `[ ]`; ingest | still one item, status done, sources now two | 0 or 1 |
-| TC-36 | Q10 (to confirm) | `tests/unit/commands.test.ts` | `[TC-36] Q10 done works on a (no owner) item` | unit | item with owner `(no owner)` | status done | 0 |
-| TC-35 | Q9 (to confirm) | `tests/unit/commands.test.ts` | `[TC-35] Q9 done still works after the source note is deleted` | integration | ingest, delete the source note, `done 1` | status done; no note read | 0 |
+| TC-36 | Q10 | `tests/unit/commands.test.ts` | `[TC-36] Q10 done works on a (no owner) item` | unit | item with owner `(no owner)` | status done | 0 |
+| TC-35 | Q9 | `tests/unit/commands.test.ts` | `[TC-35] Q9 done still works after the source note is deleted` | integration | ingest, delete the source note, `done 1` | status done; no note read | 0 |
 | TC-31 | NFR-SEC4 | `tests/unit/commands.test.ts` | `[TC-31] NFR-SEC4 task text is printed as data, not interpreted` | unit | item task `` $(touch pwned) `` and `"; rm -rf x` | output shows the text literally; no side effect; status done | 0 |
 
 ## C. Source note and store safety
@@ -58,7 +58,7 @@ Negative cases are marked **(neg)**. "Store unchanged" means the store file's SH
 | TC-20 | D54.1, Acceptance bullet D54.1 | `tests/unit/commands.test.ts` | `[TC-20] D54.1 invalid --today exits 2 and store is unchanged (neg)` | integration | `done 1 --today 20-10-2026` and `done 1 --today 2026-02-30` | valid format shown on stderr; store unchanged | 2 |
 | TC-21 | Behaviour 9 | `tests/unit/commands.test.ts` | `[TC-21] Behaviour 9 valid --today has no effect on done` | unit | same store; `done 1` with and without `--today 2030-01-01` | same resulting store | 0 |
 | TC-22 | D54.1 | `tests/unit/commands.test.ts` | `[TC-22] D54.1 valid --today is accepted by done` | integration | `done 1 --today 2026-10-20` | item 1 done | 0 |
-| TC-34 | Q8 (to confirm) | `tests/unit/commands.test.ts` | `[TC-34] Q8 bad id and bad --today exit 2 with store unchanged (neg)` | integration | `done 999 --today bad` | store unchanged | 2 |
+| TC-34 | Q8 | `tests/unit/commands.test.ts` | `[TC-34] Q8 bad id and bad --today exit 2 with store unchanged (neg)` | integration | `done 999 --today bad` | store unchanged | 2 |
 
 ## E. Performance and output
 
@@ -67,7 +67,7 @@ Negative cases are marked **(neg)**. "Store unchanged" means the store file's SH
 | TC-28 | NFR-P2, N2 | `tests/acceptance/sample-notes.test.ts` | `[TC-28] NFR-P2 done finishes in under 1 second on a 5,000-item store` | acceptance | generated store with 5,000 items; `done 2500`; timed | elapsed under 1000 ms; item 2500 done | 0 |
 | TC-30 | NFR-O3 | `tests/unit/commands.test.ts` | `[TC-30] NFR-O3 errors go to stderr, not stdout (neg)` | integration | `done 999` | stdout empty; stderr non-empty; no log file created | 2 |
 
-## F. Open-question defaults with no test yet
+## F. Decisions Q1 to Q10 with no dedicated test
 
 Q1, Q2, Q6 and Q7 are covered by TC-15, TC-18 and TC-12 with wording not asserted. Q2 (reopen command) has no test because no reopen command is specified.
 

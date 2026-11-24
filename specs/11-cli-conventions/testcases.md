@@ -88,7 +88,7 @@ Under `tests/fixtures/cli-conventions/` (T06). Each file is synthetic and tiny.
 | `2026-10-19-overdue.md` | item due `2026-10-19` for the overdue checks | TC-33 |
 | `store-v1-one-open.json` | version 1 store with one open item (id 1, task 150 characters for TC-53) | TC-09, TC-33, TC-45, TC-53 |
 | `store-v1-three-same-due.json` | version 1 store with three items due the same day, ids 3, 1, 2 | TC-54 |
-| `store-corrupt.json` | invalid JSON; used to confirm exit 2 path for store errors (spec 05) | TC-29 (optional), spec 05 tests |
+| `store-corrupt.json` | invalid JSON; used to check exit 2 path for store errors (spec 05) | TC-29 (optional), spec 05 tests |
 
 Notes on fixtures:
 - Store fixtures must follow spec 05's version 1 shape. If spec 05 changes it, update these files first.
@@ -99,5 +99,5 @@ Notes on fixtures:
 
 - Acceptance bullets in `spec.md` (`NFR-U1`, `NFR-U2`, `NFR-U4`, `D54.1`, `D17.2`, `NFR-O3`, `D20`/`D53.1`, `NFR-M2`, `NFR-C1`): TC-01, TC-03, TC-07, TC-11, TC-15 to TC-17, TC-27, TC-19 to TC-23, TC-26, TC-32 to TC-33, TC-35, TC-36.
 - Negative cases: TC-04, TC-05, TC-06, TC-12 to TC-14, TC-21, TC-22, TC-24, TC-25, TC-46, TC-47, TC-50, TC-51.
-- Open-point defaults: O-1 (TC-17), O-2 (TC-43), O-3 (TC-44), O-4 (TC-28, TC-45), O-5 (TC-46), O-6 (TC-47), O-7 (TC-06), O-8 (TC-14), O-9 (TC-40, TC-48, TC-49), O-10 (TC-50), O-11 (TC-51), O-12 (TC-52), O-13 (TC-39), O-14 (TC-53), O-15 (TC-54), O-16 (TC-55).
+- Open-point decisions: O-1 (TC-17), O-2 (TC-43), O-3 (TC-44), O-4 (TC-28, TC-45), O-5 (TC-46), O-6 (TC-47), O-7 (TC-06), O-8 (TC-14), O-9 (TC-40, TC-48, TC-49), O-10 (TC-50), O-11 (TC-51), O-12 (TC-52), O-13 (TC-39), O-14 (TC-53), O-15 (TC-54), O-16 (TC-55).
 - Structural rules: exit codes only in `cli/index.ts` (TC-40), no log file (TC-29), single clock (TC-41), env vars (TC-42).

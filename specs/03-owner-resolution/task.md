@@ -4,13 +4,13 @@ Order follows CLAUDE.md: spec ID, then red test, then green implementation, then
 
 Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 
-## Phase 0: resolve the stub mismatches and open questions
+## Phase 0: resolve the stub mismatches and record decisions
 
 - [ ] **T01** | Q1, spec Modules row | `src/owners/resolve.ts` | none | none | Rename stub `matchOwnerArg` to `resolveOwnerArg`. Add `parseOwnerPhrase` and `buildRoster` stubs throwing `NotImplementedError`. Keep the existing function docs.
 - [ ] **T02** | Q3 | `src/domain/types.ts` | none | T01 | Change `OwnerResolution.unresolved` from `firstName` to `text` (raw owner text), per D68.1. **(per decision Q3)**
 - [ ] **T03** | Q2 | `src/owners/resolve.ts` | none | T01 | Change `resolveOwner` to return an array of results, one per `&` part. **(per decision Q2)**
 - [ ] **T04** | Q13 | `src/owners/resolve.ts`, `src/domain/errors.ts` | none | T01 | Define the `resolveOwnerArg` result type (`person`, `label`, `no-match`) and add a usage-error subclass of `ActiontrackError` for ambiguous first names (check which error classes already exist first). **(per decision Q13)**
-- [ ] **T05** | Q1, Q2, Q3, Q13 | `docs/FRD.md` section 11 | none | T02, T03, T04 | Record each confirmed answer as a new decision (D77 or later). Do not change earlier D entries. Do this before any red test is written against a default.
+- [ ] **T05** | Q1, Q2, Q3, Q13 | `docs/FRD.md` section 11 | none | T02, T03, T04 | Copy each decision Q1, Q2, Q3 and Q13 from `plan.md`'s Decisions section into `docs/FRD.md` section 11 as a new decision (D77 or later). Do not change earlier D entries. Do this before any red test cites these decisions.
 
 ## Phase 1: red tests (turn stubs into failing tests)
 
@@ -30,7 +30,7 @@ Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 - [ ] **T19** | Q2b, Q2c, Q7a, Q7b, Q7c, Q8, Q9, Q5 **(per decision Q2b, Q2c, Q7a, Q7b, Q7c, Q8, Q9, Q5)** | same file (E2/E3) | TC-33, TC-34, TC-35, TC-38, TC-39, TC-40, TC-41, TC-42, TC-24 | T05 | Add the tests for these decisions. Red.
 - [ ] **T20** | NFR-SEC4 | same file (E3) | TC-53 | T01 | Add hostile-text test. Red.
 - [ ] **T21** | NFR-R1 | same file (E3) | TC-54 | T01 | Add the never-throw property test over the listed inputs. Red.
-- [ ] **T22** | NFR-A6, NFR-A7, NFR-A8 | `tests/acceptance/owners.acceptance.test.ts` (new, confirm layout) | TC-55, TC-56, TC-57, TC-58 | T01, T29 | Add the four acceptance tests. Mark them red and expected to stay red until spec 01 and spec 06 deliver the sample pipeline. Use `it.todo` if the pipeline does not exist yet, and say so in the test name.
+- [ ] **T22** | NFR-A6, NFR-A7, NFR-A8 | `tests/acceptance/owners.acceptance.test.ts` (new) | TC-55, TC-56, TC-57, TC-58 | T01, T29 | Add the four acceptance tests. Mark them red and expected to stay red until spec 01 and spec 06 deliver the sample pipeline. Use `it.todo` if the pipeline does not exist yet, and say so in the test name.
 - [ ] **T23** | CLAUDE.md test-first rule | `tests/unit/edge-cases.test.ts` | all | T06 to T21 | Run `npm test`. Confirm each new test fails with `NotImplementedError` or an assertion, not with a syntax or import error. Record the count.
 
 ## Phase 2: fixtures
@@ -85,7 +85,7 @@ Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 
 - [ ] Every TC-01 to TC-58 exists with the exact test name in `testcases.md` (the unit set in `tests/unit/edge-cases.test.ts`, the acceptance set in the acceptance folder).
 - [ ] No `it.todo` remains in the E2 and E3 blocks for the IDs in this spec. The E4 and E1 todos are out of scope.
-- [ ] Every "to confirm" default that is used has a recorded D77+ decision in `docs/FRD.md` section 11, and no earlier D entry was edited.
+- [ ] Every decision in `plan.md`'s Decisions section (Q1 to Q16) is recorded there and must be copied to `docs/FRD.md` section 11 as D77+. No earlier D entry was edited.
 - [ ] `resolveOwner`, `parseOwnerPhrase`, `buildRoster` and `resolveOwnerArg` exist with the names in the spec Modules row. No `matchOwnerArg` remains.
 - [ ] The resolver never throws on any listed input (TC-54). No note text is evaluated (TC-53).
 - [ ] Unit tests for owner labels, name forms, roster and arg matching are green. Acceptance tests for NFR-A6 to A8 are green once specs 01 and 06 run the sample folder, or are recorded as waiting on them.

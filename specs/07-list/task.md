@@ -30,7 +30,7 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 - [ ] T09 | D38.1, D34.1, D31.6, D10.1 | tests/unit/commands.test.ts | TC-17, TC-18, TC-19, TC-20, TC-21 (red) | T04
   Year and rollover tests. These fail for the right reason only after spec 02 `parseCliDate` exists; until then they fail with `NotImplementedError`, which is acceptable for red.
 - [ ] T10 | NFR-U3, D54.1, D15 | tests/unit/commands.test.ts | TC-22, TC-23, TC-44, TC-49 (red) | T04
-  Bad-argument tests: bad date, unknown status, bad `--today`, status case.
+  Bad-argument tests: bad date, unknown status, bad `--today`, `--status` in any case (Q13).
 - [ ] T11 | D4.4, D31.3, D42.1, D42.2, D72.1 | tests/unit/commands.test.ts | TC-24 to TC-31, TC-50, TC-51, TC-56 (red) | T04
   Owner tests: ambiguous first name, unique first name, full name case, unknown name, the four tokens, token limitation, repeated flag, literal label, roster-only person.
 - [ ] T12 | D15.2, D16.1, D39.2, D58.2, D65.2, D71.1, NFR-U5, FR-L6 | tests/unit/commands.test.ts | TC-32 to TC-37, TC-52, TC-54, TC-55, TC-57 (red) | T04
@@ -61,7 +61,7 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 - [ ] T23 | D15.3, D71.2, Q1 | src/cli/commands/list.ts | TC-02 to TC-05 | T22
   Implement `sortItems`: dated items by ISO due ascending, undated last, ties and undated groups by numeric id.
 - [ ] T24 | NFR-U3, D54.1 | src/cli/commands/list.ts | TC-23, TC-44, TC-49 | T10
-  Validate `--status` against `open|done|overdue` exactly (case-sensitive). Error names the valid values. Validate `--today` as ISO, with the valid format in the message.
+  Validate `--status` against `open|done|overdue` case-insensitively (Q13). Error names the valid values. Validate `--today` as ISO, with the valid format in the message.
 - [ ] T25 | D31.6, D38.1, NFR-U3 | src/cli/commands/list.ts | TC-20, TC-21, TC-22 | T09, spec 02 `parseCliDate`
   Use `parseCliDate` for `--due-before`. Any failure is exit 2 and the message names the valid forms.
 - [ ] T26 | D15.2, D16.1, D39.2, D58.2, D71.1, FR-L6 | src/cli/commands/list.ts | TC-32 to TC-36 | T22, T23
@@ -122,7 +122,7 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 
 ## Definition of done
 
-- [ ] Every open question Q1 to Q18 is answered, and each answer is recorded as a D77+ decision in `docs/FRD.md`, or explicitly deferred with a default in use.
+- [ ] All decisions in `plan.md`'s Decisions section (Q1 to Q18) are recorded as D77+ decisions in `docs/FRD.md`.
 - [ ] Every test in `testcases.md` exists, names its spec ID in brackets, and is green (or blocked by a named dependency).
 - [ ] `list` never writes the store and never stores `overdue` (ADR 0002, D44.1).
 - [ ] The default view, filters, AND, sort, table, JSON, no-match and exit codes 0, 2 and 4 behave as in `spec.md` and in the decisions it cites.

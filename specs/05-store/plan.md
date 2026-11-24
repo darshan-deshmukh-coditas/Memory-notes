@@ -59,11 +59,11 @@ Out of scope (owned elsewhere):
 
 **Load.** Three outcomes only: (a) file absent (`ENOENT`) returns an empty store `{version:1, nextId:1, items:[], drafts:[], roster:[]}` and writes nothing; (b) file present and valid returns the parsed store; (c) anything else (unreadable, invalid JSON, schema failure, wrong version) throws and leaves the file untouched. The load never writes.
 
-**Save (atomic).** Injected fs operations (`writeFile`, `fsync`, `rename`, `unlink`, `mkdir`) with real `node:fs` defaults, so fault injection needs no real disk failure. Steps: `mkdir -p` the directory; write the serialised JSON to a temp file in the same directory (`items.json.<pid>.<rand>.tmp`); fsync the temp file; `rename(temp, target)`; on any failure, best-effort `unlink` the temp file and rethrow as an I/O error mapped to exit 4 (D62.1). Same-directory temp keeps the rename on one volume. On Windows, `fs.rename` replaces an existing target, but it fails with `EPERM`/`EBUSY` if another process holds the target open; this is handled by the retry policy in S5-Q13.
+**Save (atomic).** Injected fs operations (`writeFile`, `fsync`, `rename`, `unlink`, `mkdir`) with real `node:fs` defaults, so fault injection needs no real disk failure. Steps: `mkdir -p` the directory; write the serialised JSON to a temp file in the same directory (`items.json.<pid>.<rand>.tmp`); fsync the temp file; `rename(temp, target)`; on any failure, best-effort `unlink` the temp file and rethrow as an I/O error mapped to exit 4 (D62.1). Same-directory temp keeps the rename on one volume. On Windows, `fs.rename` replaces an existing target, but it fails with `EPERM`/`EBUSY` if another process holds the target open; this is handled by the retry policy in D89.
 
 **Serialisation.** `JSON.stringify(store, null, 2) + "\n"`, UTF-8, no BOM, fixed key order defined by the schema, so the same store always gives the same bytes (NFR-D3).
 
-**Ids.** A pure function `allocateIds(store, count)` returns the ids and the store with `nextId` advanced. It never reads or writes ids of existing items, so a merged or done item keeps its id (rule 8). `saveStore` persists `nextId` only when the whole command saves, so ids handed out in a run that fails to save are not consumed (assumption, S5-Q14). Order of ids within one ingest is decided by the caller (06), which must pass notes by file name, then lines, then names on a line (D69.1); this module only preserves the order it is given.
+**Ids.** A pure function `allocateIds(store, count)` returns the ids and the store with `nextId` advanced. It never reads or writes ids of existing items, so a merged or done item keeps its id (rule 8). `saveStore` persists `nextId` only when the whole command saves, so ids handed out in a run that fails to save are not consumed (D90). Order of ids within one ingest is decided by the caller (06), which must pass notes by file name, then lines, then names on a line (D69.1); this module only preserves the order it is given.
 
 **Saves are once per command** (rule 14). Callers (06, 08, 09) call `saveStore` once at the end, after all in-memory changes succeeded.
 
@@ -81,7 +81,7 @@ Out of scope (owned elsewhere):
 
 ## Risks
 
-1. **Windows rename over an open file.** Editors, indexers or antivirus can hold the store file, so `rename` fails with `EPERM`/`EBUSY`. Mitigation: bounded retry (S5-Q13), then exit 4 with the old file intact. Residual risk: the user sees an error and reruns.
+1. **Windows rename over an open file.** Editors, indexers or antivirus can hold the store file, so `rename` fails with `EPERM`/`EBUSY`. Mitigation: bounded retry (D89), then exit 4 with the old file intact. Residual risk: the user sees an error and reruns.
 2. **Concurrent runs.** No lock (D59.2). Two overlapping `ingest` runs both allocate from the same `nextId`; the later write wins and the earlier run's new items disappear. Ids printed by the lost run may later name a different item. Accepted by D59.2; this is the single biggest data-integrity risk and must be stated to the user (S5-Q15).
 3. **Corrupt JSON.** A hand-edited or truncated file blocks all commands until fixed (D59.4). Mitigation: the error names the path and the parse position; the file is never overwritten, so the user can repair it.
 4. **Crash between write and rename.** Leaves a stale `*.tmp` file. It is ignored on load and never deleted by a later save (S5-Q11). Disk fills up with stale temps only if many crashes occur.
@@ -104,7 +104,7 @@ D77 and D78 (cited in `task.md` T02) are the first two of the new decisions this
 - **S5-Q10 (D86):** On write: 2-space indent, LF line endings, trailing newline, UTF-8 without BOM. A leading BOM is tolerated on read.
 - **S5-Q11 (D87):** The temp file is `items.json.<pid>.<rand>.tmp` in the same directory. It is removed on a failed write in the same run. Stale temps from crashed runs are ignored, never deleted.
 - **S5-Q12 (D88):** The temp file is fsynced. The directory is not fsynced on Windows.
-- **S5-Q13 (D89):** A failed rename on Windows (EPERM, EBUSY) is retried 3 times with waits of 100 ms, then 200 ms. If it still fails, exit 4 and the old file is left intact.
+- **S5-Q13 (D89):** A failed rename on Windows (EPERM, EBUSY) is retried: 3 attempts in total, with waits of 100 ms and then 200 ms between them. If the third attempt fails, exit 4 and the old file is left intact.
 - **S5-Q14 (D90):** The pure allocator lives in `store/store.ts` and 06 calls it. Ids from a run that fails before saving are not consumed: the allocator commits only on successful save. Output prints ids only after a successful save.
 - **S5-Q15 (D91):** Save does not check whether the file changed since load (D59.2). The overlapping-run risk (Risks 2) is stated to the user.
 - **S5-Q16 (D92):** An unreadable owners file (EACCES, EISDIR, etc.) is a warning. Invalid JSON, or a top level that is not an object of string values, is malformed: one warning, no entries. An entry with an invalid email is skipped with a warning; the rest are kept.

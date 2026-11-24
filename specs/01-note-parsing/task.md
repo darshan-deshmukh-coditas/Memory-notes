@@ -31,7 +31,7 @@ Format: `Tnn | satisfies | file | tests (see testcases.md) | depends on`. Work i
   - Write the eight sample checks as failing tests. TC-54 asserts presence per kind now; exact counts are added in T42.
 - [ ] T12 | red check | all three test files | all non-Q TCs | T06 to T11
   - Run `npm test`. Every new spec 01 test must fail with `NotImplementedError` (or a wrong value), not a syntax or import error. Fix test code until only the intended failures remain.
-- [ ] T13 | open points | `tests/unit/*.test.ts` | TC-58 to TC-73 | T01
+- [ ] T13 | settled decisions Q-01 to Q-19 | `tests/unit/*.test.ts` | TC-58 to TC-73 | T01
   - Write the Q-rows as failing tests, named with the decision ID (per decision Q-nn). Do not add `it.todo`.
 
 ## Phase 2: green, in dependency order
@@ -78,7 +78,7 @@ Note reading
 - [ ] T31 | D22.1, D22.2, D57.1, D5.1 | `src/parser/note.ts` | TC-17, TC-19, TC-63 | T19, T20, T30
   - Order: empty, UTF-8, header. Filename fallback only when `date` is null and no unparseable value. Skip reasons from the fixed constants only.
 - [ ] T32 | NFR-R1, NFR-R2 | `src/parser/note.ts` | TC-26, TC-27, TC-28 | T31
-  - Wrap all fs and parse calls; every error becomes `{file, reason}` with a fixed reason. Export the five reason strings as one constant and assert against it.
+  - Wrap all fs and parse calls; every error becomes `{file, reason}` with a fixed reason. Export the six reason strings (including `unreadable file`) as one constant and assert against it.
 - [ ] T33 | D29.1, D29.2, NFR-D3, NFR-SEC3 | `src/parser/note.ts` (`listNoteFiles`) | TC-01 to TC-04 | T09 (red), T31
   - `readdir` with `withFileTypes`. Pure `selectNoteNames(entries)` for the rules. Only the given folder is read. Plain code-unit sort.
 - [ ] T34 | D65.1, D50.1 | `src/parser/items.ts` and `note.ts` | TC-45 (line skip shape) | T26, T31
@@ -121,7 +121,7 @@ Decision tasks (per decisions Q-01 to Q-19; one task per decision group, same ch
 - [ ] Every non-Q TC in testcases.md exists as a real test with its ID in the name, and passes.
 - [ ] The Q-rows pass; their names carry the decision ID.
 - [ ] `readNote`, `listNoteFiles`, `parseHeader`, `extractItems`, `dateFromFilename` never throw on user input (negative TCs green).
-- [ ] The five skip reason strings are the only note-level reasons; the one line-level reason is `empty action item`.
+- [ ] The six skip reason strings are the only skip reasons: `empty file`, `not valid UTF-8`, `missing date`, `unparseable date`, `unreadable file` (note level) and `empty action item` (line level).
 - [ ] Sample acceptance checks NFR-A1 to NFR-A4 pass; TC-54 counts recorded.
 - [ ] `docs/TRACEABILITY.md` rows updated (T46); no other rows changed.
 - [ ] `npm run check` passes.

@@ -1,6 +1,6 @@
 # Test cases: 02 Date resolution
 
-All unit tests go in `tests/unit/dates.test.ts` unless noted. Test names start with the cited spec ID in brackets, as CLAUDE.md requires. Type column: `unit`, `unit (negative)` for bad input that must be flagged or rejected and never thrown from `resolveDue`/`findDuePhrase`, or `property` (generated inputs, fixed seed). "Expected" gives the result: `date X` means `kind: "date"`, `due X`; `flagged` means `kind: "flagged"` (`due null`, `dueFlagged true`); `none` means no date and no flag. Open-question defaults are marked **(OQ-n)** and must be re-checked once the user answers.
+All unit tests go in `tests/unit/dates.test.ts` unless noted. Test names start with the cited spec ID in brackets, as CLAUDE.md requires. Type column: `unit`, `unit (negative)` for bad input that must be flagged or rejected and never thrown from `resolveDue`/`findDuePhrase`, or `property` (generated inputs, fixed seed). "Expected" gives the result: `date X` means `kind: "date"`, `due X`; `flagged` means `kind: "flagged"` (`due null`, `dueFlagged true`); `none` means no date and no flag. Cases that apply a decision are marked **(OQ-n)** and follow the Decisions section of `plan.md`.
 
 Meeting dates use the calendar in the fixtures section. Results for `statusOf` use `today` passed in, never the system clock.
 

@@ -121,7 +121,7 @@ Each line below is settled for this spec. Record them as D77+ in `docs/FRD.md` i
 - OQ-11: An explicit ISO date is stored as written, even outside the meeting window (`by 2026-01-05` in a 2026-09-03 meeting stores 2026-01-05).
 - OQ-12: The rollover cutoff is the meeting date minus 6 calendar months, clamped to month end (31 Aug minus 6 months = 28 or 29 Feb); a date exactly on the cutoff does not roll.
 - OQ-13: Rollover runs before the weekday check (meeting 2026-12-01, `Tue 5 Jan` gives 2027-01-05, a Tuesday, no warning).
-- OQ-14: The stored flag is the `dueFlagged` boolean only; unresolved wording is reported by ingest but not stored. Specs 05 and 06 use this form.
+- OQ-14: The stored flag is the `dueFlagged` boolean only; unresolved wording is reported by ingest but not stored. Spec 05 (spec.md) stores `due` and `dueFlagged`; spec 06 (spec.md) lists flagged dates by file and line in its summary and names no stored wording field.
 - OQ-15: The CLI accepts `4 Mar` and `4 March 2026` (D31.6 via D10); weekday names, `today` and slash dates are errors.
 - OQ-16: `today` is the machine's local calendar date (D1.3), via `systemClock`'s local getters. This is decided for this spec; NFR-C4 is still open and is not closed by this decision.
 - OQ-17: A year-less date far in the future uses the meeting's year, with no rollback (D34.1).

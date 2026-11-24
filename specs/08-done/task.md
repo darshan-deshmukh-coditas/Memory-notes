@@ -1,6 +1,6 @@
 # Tasks: `actiontrack done <id>` (spec 08)
 
-Work in this order. Red first, then green, then refactor. Test IDs refer to `testcases.md`. Plan open questions Q1 to Q10 are marked "(to confirm)"; implement the recommended default only after the user confirms it, and record the answer as a new decision (D77+) in `docs/FRD.md` in the same change.
+Work in this order. Red first, then green, then refactor. Test IDs refer to `testcases.md`. Decisions Q1 to Q10 are recorded in plan.md's Decisions section; implement them as written, and record them as new decisions (D77+) in `docs/FRD.md` in the same change.
 
 Legend: `dep` = earlier tasks that must be done first.
 
@@ -31,7 +31,7 @@ Legend: `dep` = earlier tasks that must be done first.
 - [ ] **T20** Add failing test `[TC-23]` (`--store` and `ACTIONTRACK_STORE` select the store). Spec: D17.2. File: `tests/unit/commands.test.ts`. Test: TC-23. Dep: T04.
 - [ ] **T21** Add failing test `[TC-30]` (errors on stderr, nothing on stdout, no log file). Spec: NFR-O3. File: `tests/unit/commands.test.ts`. Test: TC-30. Dep: T04.
 - [ ] **T22** Add failing test `[TC-31]` (hostile task text printed as data). Spec: NFR-SEC4. File: `tests/unit/commands.test.ts`. Test: TC-31. Dep: T04.
-- [ ] **T23** Add failing tests for the open-question defaults `[TC-35]`, `[TC-36]`. Spec: decisions Q9, Q10. File: `tests/unit/commands.test.ts`. Test: TC-35, TC-36. Dep: T01, T04.
+- [ ] **T23** Add failing tests for decisions Q9 and Q10 `[TC-35]`, `[TC-36]`. Spec: decisions Q9, Q10. File: `tests/unit/commands.test.ts`. Test: TC-35, TC-36. Dep: T01, T04.
 - [ ] **T24** Add failing acceptance test `[TC-28]` (5,000-item store, `done` under 1 second). Spec: NFR-P2, N2. File: `tests/acceptance/sample-notes.test.ts`. Test: TC-28. Dep: T04.
 - [ ] **T25** Run `npm test`. Confirm every new test fails for the right reason (`NotImplementedError`, not a syntax or import error). Test: all. Dep: T05 to T24.
 
@@ -40,10 +40,10 @@ Legend: `dep` = earlier tasks that must be done first.
 - [ ] **T26** Implement strict id parsing (`^[1-9][0-9]*$`, safe integer, Q4/Q5). Usage error exit 2. Spec: Behaviour 1, D32.2. File: `src/cli/commands/done.ts`. Test: TC-01 to TC-08, TC-32. Dep: T25, T01.
 - [ ] **T27** Implement store-path resolution through `resolveStorePath`. Spec: D17.2, D59.1. File: `src/store/store.ts`, `src/cli/commands/done.ts`. Test: TC-23. Dep: T02, T26.
 - [ ] **T28** Implement `loadStore` error mapping: missing store means unknown id (exit 2), corrupt or wrong version exit 2 without overwrite. Spec: D59.3, D59.4, D69.2. File: `src/store/store.ts`. Test: TC-14, TC-24, TC-25. Dep: T27.
-- [ ] **T29** Implement `--today` validation before the store is read (Q8 default). Spec: D54.1. File: `src/cli/index.ts` or shared validator. Test: TC-20, TC-34. Dep: T03, T16.
+- [ ] **T29** Implement `--today` validation before the store is read (Q8). Spec: D54.1. File: `src/cli/index.ts` or shared validator. Test: TC-20, TC-34. Dep: T03, T16.
 - [ ] **T30** Implement the lookup and the "set done" path with confirmation message (id, owner, task). Spec: Behaviour 2, FR-D32.4. File: `src/cli/commands/done.ts`. Test: TC-09, TC-10, TC-11, TC-27, TC-36. Dep: T28.
 - [ ] **T31** Implement unknown id: exit 2, no save call. Spec: FR-D32.2. File: `src/cli/commands/done.ts`. Test: TC-12, TC-13, TC-32. Dep: T30.
-- [ ] **T32** Implement already-done: message, exit 0, no save call (Q1 default). Spec: FR-D32.3. File: `src/cli/commands/done.ts`. Test: TC-15. Dep: T30.
+- [ ] **T32** Implement already-done: message, exit 0, no save call (Q1). Spec: FR-D32.3. File: `src/cli/commands/done.ts`. Test: TC-15. Dep: T30.
 - [ ] **T33** Implement `saveStore` as atomic write (temp file, rename), and map save failure to exit 4 with stderr message (D62.1). Spec: D59.2, NFR-R3. File: `src/store/store.ts`, `src/cli/commands/done.ts`. Test: TC-26, TC-29. Dep: T30.
 - [ ] **T34** Ensure `done.ts` has no import of `parser/*`, `owners/*`, `dates/*`, `dedupe/*` and no `fs` call on the notes folder. Spec: FR-D32.1. File: `src/cli/commands/done.ts`. Test: TC-16, TC-35. Dep: T30.
 - [ ] **T35** Make `--store` and env var behave per D17.2 and print errors only to stderr (NFR-O3). Spec: NFR-O3. File: `src/cli/commands/done.ts`. Test: TC-30. Dep: T27, T33.

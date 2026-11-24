@@ -1,6 +1,6 @@
 # Tasks: spec 06 `actiontrack ingest <folder>`
 
-Order follows CLAUDE.md: find the requirement, test first (red), implement (green), refactor, update traceability, run `npm run check`. Test IDs (TC-nn) are in `testcases.md`. "Spec NN" means that spec's implementation must be done first (its own tasks, not listed here). Answers to `plan.md` open points must be recorded in `docs/FRD.md` (D77+) before the tasks marked **[needs answer]** start.
+Order follows CLAUDE.md: find the requirement, test first (red), implement (green), refactor, update traceability, run `npm run check`. Test IDs (TC-nn) are in `testcases.md`. "Spec NN" means that spec's implementation must be done first (its own tasks, not listed here). The decisions Q1 to Q21 in `plan.md` must be recorded in `docs/FRD.md` (D77+) before the tasks that cite them start.
 
 Legend: `[ ]` open. Satisfies = FRD, NFRD or spec ID. Depends = earlier task IDs or other specs.
 
@@ -10,7 +10,7 @@ Legend: `[ ]` open. Satisfies = FRD, NFRD or spec ID. Depends = earlier task IDs
 |---|---|---|---|---|---|---|
 | [ ] | T01 | Confirm specs 01 to 05 and 11 have their own tasks done or are at least stubbed with `NotImplementedError`. Record which functions ingest will call. | spec 06 Dependencies | none (check only) | none | none |
 | [ ] | T02 | Record plan.md decisions Q1 to Q21 as D77+ in `docs/FRD.md` section 11 and the revision note. | CLAUDE.md step 1 | `docs/FRD.md` | none | T01 |
-| [ ] | T03 | Re-check the "to confirm" test cases after T02. Remove or rename any whose default was rejected. | TC-48, TC-51, TC-53, TC-70, TC-71, TC-72 | `specs/06-ingest/testcases.md` | none | T02 |
+| [ ] | T03 | Check that each test case citing a plan.md decision (TC-48, TC-51, TC-53, TC-70, TC-71, TC-72) matches that decision as recorded in `plan.md` and `docs/FRD.md`. Correct any test whose wording differs. | TC-48, TC-51, TC-53, TC-70, TC-71, TC-72 | `specs/06-ingest/testcases.md` | none | T02 |
 | [ ] | T04 | Add `INTERNAL: 4` to `EXIT` and widen `ExitCode` (D62.1). Spec 11 owns this; do it there and confirm here. | D62.1, D20 | `src/domain/exit-codes.ts` | TC-10 (compile) | Spec 11 |
 | [ ] | T05 | Add `today?: string` to `IngestOptions` and pass `--today` through (D54.1). Spec 11 owns parsing. | D54.1 | `src/cli/commands/ingest.ts` | TC-04 (compile) | Spec 11 |
 | [ ] | T06 | Create the fixture files listed in `testcases.md` "Fixtures needed", each with a header comment stating expected counts. Generate byte-sensitive files (BOM, CRLF, 0xFF) in the test, not by hand. | all TC | `tests/fixtures/notes/*` | none | T03 |
@@ -22,7 +22,7 @@ Legend: `[ ]` open. Satisfies = FRD, NFRD or spec ID. Depends = earlier task IDs
 |---|---|---|---|---|---|---|
 | [ ] | T08 | Add `describe("ingest (BR-01, BR-11, FR-I1..I15)")` to the command tests. Replace nothing else. Add TC-01 to TC-16 as real failing tests. | FR-I1, FR-I8, FR-I9, FR-I13, FR-I14, D20, D30, D35.3, D70 | `tests/unit/commands.test.ts` | TC-01 to TC-16 | T07 |
 | [ ] | T09 | Add TC-42, TC-43, TC-44, TC-47, TC-50, TC-52, TC-53, TC-54, TC-69 to the same file. | FR-I15, D13, D14.2, D52.1, D59.3, NFR-SEC3, D29, NFR-M2, NFR-M3 | `tests/unit/commands.test.ts` | as listed | T07 |
-| [ ] | T10 | Add TC-11, TC-12, TC-51, TC-70, TC-71, TC-72 to the same file. | D59.4, D62.1, D17.2, D13 (to confirm), D35.3 (to confirm) | `tests/unit/commands.test.ts` | as listed | T07, T03 |
+| [ ] | T10 | Add TC-11, TC-12, TC-51, TC-70, TC-71, TC-72 to the same file. | D59.4, D62.1, D17.2, D13, Q1, D35.3, Q3, Q4 | `tests/unit/commands.test.ts` | as listed | T07, T03 |
 | [ ] | T11 | Replace the parsing `it.todo`s in `tests/unit/ingest-parsing.test.ts` with TC-17 to TC-21, TC-45, TC-46, TC-55 as real failing tests. | AC-I2, AC-I3, D12, D26.1, D37.1, D58.1, D69.1 | `tests/unit/ingest-parsing.test.ts` | as listed | T07 |
 | [ ] | T12 | Add TC-22 to TC-29 and TC-23 to TC-26 (byte and line-ending cases) to `tests/unit/edge-cases.test.ts`. | D5.1, D22, D55, D57.1, D64 | `tests/unit/edge-cases.test.ts` | as listed | T07 |
 | [ ] | T13 | Add TC-30 to TC-34, TC-37, TC-38 to TC-41, TC-48, TC-49 to `tests/unit/edge-cases.test.ts`. | FR-E1, FR-E2, FR-E3, D3, D23, D39, D41, D61, D25 | `tests/unit/edge-cases.test.ts` | as listed | T07 |
@@ -65,7 +65,7 @@ Legend: `[ ]` open. Satisfies = FRD, NFRD or spec ID. Depends = earlier task IDs
 |---|---|---|---|---|---|---|
 | [ ] | T41 | Confirm through ingest that BOM, CRLF, empty, whitespace-only and non-UTF-8 notes behave per spec 01. Add ingest-level assertions only; no parser changes here unless a test shows a gap (then fix in spec 01 module and record). | D55.1 to D55.3, D64.1, D5.1 | `src/parser/note.ts` (if needed) | TC-23, TC-24, TC-25, TC-26 | T40, Spec 01 |
 | [ ] | T42 | Confirm ignored-line kinds reach the summary (table row, action line, block quote, code fence, HTML comment, numbered checkbox). | D26.2, D27.1, D37.1 | `src/parser/items.ts` (if needed) | TC-19, TC-20 | T40, Spec 01 |
-| [ ] | T43 | Confirm skip reasons are exactly the five strings in D65.1 and reach the report unchanged. | D65.1 | `src/parser/note.ts` (if needed) | TC-06 | T40, Spec 01 |
+| [ ] | T43 | Confirm skip reasons are exactly the six strings (the five in D65.1 plus `unreadable file`, Q6) and reach the report unchanged. | D65.1, Q6 | `src/parser/note.ts` (if needed) | TC-06 | T40, Spec 01 |
 
 ## E. Sample folder, idempotence and performance
 
@@ -91,7 +91,7 @@ Legend: `[ ]` open. Satisfies = FRD, NFRD or spec ID. Depends = earlier task IDs
 
 ## Definition of done
 
-- [ ] Every open point in plan.md is answered and recorded in `docs/FRD.md` (D77+), or its default is confirmed in writing by the requester. No "to confirm" test remains that relies on an unconfirmed default.
+- [ ] Every decision Q1 to Q21 in plan.md is recorded in `docs/FRD.md` (D77+). No test case relies on a decision that is not recorded.
 - [ ] TC-01 to TC-72 exist as real tests with the TC ID in brackets. Every "(negative)" case passes for the right reason.
 - [ ] `ingest` runs end to end on `notes/` with 4 notes skipped, 31 read, exit 1 (TC-57). No crash (TC-56).
 - [ ] Re-running ingest on the sample changes no id or status (TC-64).

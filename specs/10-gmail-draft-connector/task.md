@@ -1,6 +1,6 @@
 # Tasks: Spec 10, Gmail draft connector
 
-Order matters. Red first (stubs become failing tests), then green one group at a time. Do not start a green task before its red tests exist. Open questions Q1 to Q20 are in plan.md; record each chosen answer as a new decision (D77 onward) in `docs/FRD.md` before the task that depends on it.
+Order matters. Red first (stubs become failing tests), then green one group at a time. Do not start a green task before its red tests exist. Decisions Q1 to Q20 are in plan.md; record each one as a new decision (D77 onward) in `docs/FRD.md` before the task that depends on it.
 
 Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 
@@ -30,7 +30,7 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T10 | D20.4 | `tests/unit/connector.test.ts` | TC-14, TC-15, TC-16, TC-17, TC-18 | T02
   One failing test per failure mode. Red.
 - [ ] T11 | D76.1, D76.2 | `tests/unit/connector.test.ts` | TC-19, TC-20, TC-32 | T02
-  Timeout tests using the seam (Q2). Red. If Q2 is rejected, write these with real 60 s and a longer vitest timeout instead.
+  Timeout tests using the seam (Q2). Red.
 - [ ] T12 | D20.5, NFR-R4 | `tests/unit/commands.test.ts` (followup section, shared with spec 09) | TC-21 | T02
   Store byte-identical after a connector failure. Red until spec 09 wiring exists. Mark dependency on 09 in the test name comment.
 - [ ] T13 | FR-F5, NFR-R4 | `tests/unit/connector.test.ts`, `tests/unit/commands.test.ts` | TC-22, TC-23 | T10
@@ -69,7 +69,7 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T28 | NFR-SEC1, NFR-O3, Q8 | `src/email/mcp-connector.ts` | TC-26, TC-35 | T24
   Capture child stderr into a bounded buffer; never print it; never include it in the thrown message. Error text says exit status and variable name only.
 - [ ] T29 | Q7 | `src/email/mcp-connector.ts` | TC-37 | T24
-  Pass `process.env` to the child (Q7 default). Confirm it matches the decision.
+  Pass `process.env` to the child (Q7). Confirm it matches the decision.
 - [ ] T30 | NFR-SEC1 | `src/email/mcp-connector.ts` | TC-25 | T24
   Confirm the code path has no `fs` import. If it has one, remove it.
 - [ ] T31 | D20.5, NFR-R4 | `tests/unit/commands.test.ts` and spec 09 wiring | TC-21, TC-23 | T23, T24, and spec 09 `followup` implemented
@@ -124,4 +124,4 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] Followup tests never start a process (TC-27).
 - [ ] Manual smoke (T38) done by the user, or explicitly recorded as pending.
 - [ ] `docs/TRACEABILITY.md` status updated (T40). `npm run check` passes (T41).
-- [ ] Every open question Q1 to Q20 has a recorded decision or is listed as still open in the FRD.
+- [ ] Every decision Q1 to Q20 is recorded in `docs/FRD.md` as D77 onward.
