@@ -1,18 +1,18 @@
 # Tasks: Spec 10, Gmail draft connector
 
-Order matters. Red first (stubs become failing tests), then green one group at a time. Do not start a green task before its red tests exist. Decisions Q1 to Q20 are in plan.md; record each one as a new decision (D77 onward) in `docs/FRD.md` before the task that depends on it.
+Order matters. Red first (stubs become failing tests), then green one group at a time. Do not start a green task before its red tests exist. Decisions D244 to D263 are in plan.md; record each one as a new decision (D244 to D263 for this spec) in `docs/FRD.md` before the task that depends on it.
 
 Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 
 ## Phase 0: decisions and fixtures
 
-- [ ] T01 | D74.2, Q1 | `docs/FRD.md` (section 11, new D77 entry) | none | none
-  Record Q1 to Q20 from the Decisions section of plan.md, per decision Q1 to Q20, as D77 onward. Q1 is settled by FR-D74.2 (exit 3).
+- [ ] T01 | D74.2, D244 | `docs/FRD.md` (section 11, new entries D244 to D263) | none | none
+  Record D244 to D263 from the Decisions section of plan.md, per decision D244 to D263 for this spec, in `docs/FRD.md`. D244 is settled by FR-D74.2 (exit 3).
 - [ ] T02 | D45.3, NFR-M3 | `tests/fixtures/fake-gmail-mcp/server.mjs` | used by TC-04, TC-07 to TC-11, TC-14 to TC-26, TC-29, TC-31, TC-32, TC-36, TC-37, TC-38 | T01
   Create the fake MCP stdio server with all modes from testcases.md Fixtures section 1. Check by hand that it starts and answers `tools/list`.
 - [ ] T03 | NFR-M3 | `tests/fixtures/fake-gmail-mcp/helpers.ts` (or inline in test) | all integration TCs | T02
   Helpers: build the command for a mode, make temp dir and log, read log, check pid alive.
-- [ ] T04 | Q16 | `tests/unit/safety.test.ts` | TC-02, TC-03 (baseline) | none
+- [ ] T04 | D259 | `tests/unit/safety.test.ts` | TC-02, TC-03 (baseline) | none
   Run `npm test -- safety` and record that both tests pass. Record the file hash (`git hash-object tests/unit/safety.test.ts`). The file must not change after this point.
 
 ## Phase 1: red (failing tests, cite IDs)
@@ -22,7 +22,7 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T06 | NFR-S2, D45.1 | `tests/unit/connector.test.ts` | TC-04, TC-36 | T02
   Guard refuses `send_email`; a successful run only calls `create_draft`. Red: guard not exported yet.
 - [ ] T07 | D45.2, D6.3 | `tests/unit/connector.test.ts` | TC-05, TC-06, TC-30 | T02
-  `to` present or absent in arguments; blank `to` treated as absent (Q14). Red.
+  `to` present or absent in arguments; blank `to` treated as absent (D257). Red.
 - [ ] T08 | D75.1 | `tests/unit/connector.test.ts` | TC-07, TC-08, TC-09, TC-10, TC-11 | T02
   Draft id parsing cases. Red.
 - [ ] T09 | D74.2, D20.4 | `tests/unit/connector.test.ts`, `tests/unit/commands.test.ts` | TC-12, TC-13 | T02
@@ -30,18 +30,18 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T10 | D20.4 | `tests/unit/connector.test.ts` | TC-14, TC-15, TC-16, TC-17, TC-18 | T02
   One failing test per failure mode. Red.
 - [ ] T11 | D76.1, D76.2 | `tests/unit/connector.test.ts` | TC-19, TC-20, TC-32 | T02
-  Timeout tests using the seam (Q2). Red.
+  Timeout tests using the seam (D245). Red.
 - [ ] T12 | D20.5, NFR-R4 | `tests/unit/commands.test.ts` (followup section, shared with spec 09) | TC-21 | T02
   Store byte-identical after a connector failure. Red until spec 09 wiring exists. Mark dependency on 09 in the test name comment.
 - [ ] T13 | FR-F5, NFR-R4 | `tests/unit/connector.test.ts`, `tests/unit/commands.test.ts` | TC-22, TC-23 | T10
   Exactly one request per failure mode; no second `createDraft` after `GmailError`. Red.
-- [ ] T14 | Rule 6, Q5 | `tests/unit/connector.test.ts` | TC-24, TC-38 | T02
+- [ ] T14 | Rule 6, D248 | `tests/unit/connector.test.ts` | TC-24, TC-38 | T02
   Pid not alive after settle (success and failure); separate pids per call. Red.
-- [ ] T15 | NFR-SEC1, NFR-O3, Q7, Q8 | `tests/unit/connector.test.ts` | TC-25, TC-26, TC-35, TC-37 | T02
+- [ ] T15 | NFR-SEC1, NFR-O3, D250, D251 | `tests/unit/connector.test.ts` | TC-25, TC-26, TC-35, TC-37 | T02
   No files written; planted secret absent from output; no stdout writes; env inherited. Red.
 - [ ] T16 | NFR-M3, D45.3 | `tests/unit/commands.test.ts` | TC-27 | T03
   Child-process spy shows zero spawns in followup tests. Red until followup test file uses the fake.
-- [ ] T17 | D75.2, N3, Q4 | `tests/unit/connector.test.ts` | TC-29, TC-31 | T02
+- [ ] T17 | D75.2, N3, D247 | `tests/unit/connector.test.ts` | TC-29, TC-31 | T02
   Alternative server accepted; quoted path with spaces starts the server. Red.
 - [ ] T18 | Phase 1 check | all test files | all | T05 to T17
   Run `npm test`. Confirm every new TC name is red for the right reason (stub or missing behaviour), not a syntax error. Commit the red state if the user wants it recorded.
@@ -53,23 +53,23 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T20 | D45.2, D6.3 | `src/email/mcp-connector.ts` | TC-05, TC-06, TC-30 | T07, T19
   Build arguments: `{subject, body}`; add `to` only when non-blank. Key must be absent when no recipient.
 - [ ] T21 | D75.1 | `src/email/mcp-connector.ts` | TC-07 to TC-11 | T08
-  `parseDraftId(result)`: `structuredContent.draftId` (non-empty string), else first text block JSON; else throw `GmailError`. Check SDK types first (Q12).
+  `parseDraftId(result)`: `structuredContent.draftId` (non-empty string), else first text block JSON; else throw `GmailError`. Check SDK types first (D255).
 - [ ] T22 | D74.2 | `src/email/mcp-connector.ts` (add `connectorFromEnv(env, deps?)`) | TC-12 | T09
   Reads `ACTIONTRACK_GMAIL_MCP_CMD`; throws `GmailError` naming it when unset or blank. Does not spawn.
 - [ ] T23 | D74.2 | `src/cli/index.ts` | TC-13 | T22
   Replace the `UsageError` (exit 2) in the connector factory with `connectorFromEnv`. This fixes the mismatch with FR-D74.2 (exit 3). Keep the factory lazy, but spec 09 must call it before the first draft.
 - [ ] T24 | D20.4 | `src/email/mcp-connector.ts` | TC-14, TC-15, TC-17, TC-18 | T10, T21
-  Per-call flow: spawn `StdioClientTransport` (Q4 parsing), connect, `tools/list` check (Q11), `tools/call`, map every thrown error to `GmailError` with a message naming the failure.
+  Per-call flow: spawn `StdioClientTransport` (D247 parsing), connect, `tools/list` check (D254), `tools/call`, map every thrown error to `GmailError` with a message naming the failure.
 - [ ] T25 | D20.4 | `src/email/mcp-connector.ts` | TC-16 | T24
   `isError: true` results throw `GmailError`, even with a draft id present.
-- [ ] T26 | Rule 6, Q5 | `src/email/mcp-connector.ts` | TC-24, TC-38 | T24
+- [ ] T26 | Rule 6, D248 | `src/email/mcp-connector.ts` | TC-24, TC-38 | T24
   `finally` closes the transport and kills the child on success and failure. One server per call.
 - [ ] T27 | D76.1, D76.2 | `src/email/mcp-connector.ts` | TC-19, TC-20, TC-32 | T11, T26
-  Timer of 60 s (constant) covering connect, list, call. Constructor seam `timeoutMs` default 60000 (Q2). On timeout: kill child, throw `GmailError` saying it timed out after 60 seconds.
-- [ ] T28 | NFR-SEC1, NFR-O3, Q8 | `src/email/mcp-connector.ts` | TC-26, TC-35 | T24
+  Timer of 60 s (constant) covering connect, list, call. Constructor seam `timeoutMs` default 60000 (D245). On timeout: kill child, throw `GmailError` saying it timed out after 60 seconds.
+- [ ] T28 | NFR-SEC1, NFR-O3, D251 | `src/email/mcp-connector.ts` | TC-26, TC-35 | T24
   Capture child stderr into a bounded buffer; never print it; never include it in the thrown message. Error text says exit status and variable name only.
-- [ ] T29 | Q7 | `src/email/mcp-connector.ts` | TC-37 | T24
-  Pass `process.env` to the child (Q7). Confirm it matches the decision.
+- [ ] T29 | D250 | `src/email/mcp-connector.ts` | TC-37 | T24
+  Pass `process.env` to the child (D250). Confirm it matches the decision.
 - [ ] T30 | NFR-SEC1 | `src/email/mcp-connector.ts` | TC-25 | T24
   Confirm the code path has no `fs` import. If it has one, remove it.
 - [ ] T31 | D20.5, NFR-R4 | `tests/unit/commands.test.ts` and spec 09 wiring | TC-21, TC-23 | T23, T24, and spec 09 `followup` implemented
@@ -77,7 +77,7 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T32 | NFR-M3, D45.3 | `tests/unit/commands.test.ts` | TC-27 | T16, T31
   All followup tests inject the fake connector. Spawn spy count is 0.
 - [ ] T33 | D75.2, N3 | `src/email/mcp-connector.ts` | TC-29, TC-31 | T24
-  Confirm Windows spawn works for `node` and quoted paths. Adjust Q4 parsing if needed.
+  Confirm Windows spawn works for `node` and quoted paths. Adjust D247 parsing if needed.
 
 ## Phase 3: safety and refactor
 
@@ -94,7 +94,7 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 
 - [ ] T38 | NFR-C2, NFR-A10, NFR-S3, D45.3 | none (manual) | TC-33, TC-34 | T36 and user's Gmail server available
   **Needs the user's Gmail MCP server and account. Agent does not run this step.** User sets `ACTIONTRACK_GMAIL_MCP_CMD`, runs `actiontrack followup <owner>`, and confirms the draft is in Drafts and nothing is in Sent.
-- [ ] T39 | Q6 | `docs/FRD.md` (new decision D78+ if the contract differs), `tests/fixtures/fake-gmail-mcp/server.mjs` | TC-07, TC-29 | T38
+- [ ] T39 | D249 | `docs/FRD.md` (new decision within D244 to D263 for this spec if the contract differs), `tests/fixtures/fake-gmail-mcp/server.mjs` | TC-07, TC-29 | T38
   If the real server's tool name or argument shape differs, add an adapter per FR-D75.2 and record it as a decision. Do not change `ALLOWED_MCP_TOOLS`. Update the fake to match the decision.
 
 ## Phase 5: close out
@@ -108,7 +108,7 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] T43 | N3 | repo | all | T41
   Confirm the tests pass on Windows (the current platform). macOS and Linux runs are recorded as not yet done.
 - [ ] T44 | Spec sync | `specs/10-gmail-draft-connector/spec.md`, `docs/FRD.md` | none | T39
-  If any Q decision changed the spec wording (for example Q5 or Q4), add the decision reference in the spec's Contract section. Do not edit other spec folders.
+  If any Q decision changed the spec wording (for example D248 or D247), add the decision reference in the spec's Contract section. Do not edit other spec folders.
 
 ## Definition of done
 
@@ -124,4 +124,4 @@ Format: `[ ] Txx | spec ID | file | test IDs (testcases.md) | depends on`
 - [ ] Followup tests never start a process (TC-27).
 - [ ] Manual smoke (T38) done by the user, or explicitly recorded as pending.
 - [ ] `docs/TRACEABILITY.md` status updated (T40). `npm run check` passes (T41).
-- [ ] Every decision Q1 to Q20 is recorded in `docs/FRD.md` as D77 onward.
+- [ ] Every decision D244 to D263 is recorded in `docs/FRD.md` for this spec.

@@ -1,7 +1,7 @@
 # Test cases: Spec 10, Gmail draft connector
 
 Conventions
-- Test names start with the TC ID in brackets. Existing `safety.test.ts` names are kept unchanged (Q16 in plan.md), so their TC mapping is by the comment above them.
+- Test names start with the TC ID in brackets. Existing `safety.test.ts` names are kept unchanged (D259 in plan.md), so their TC mapping is by the comment above them.
 - "integration" means the real `McpDraftConnector` talks over stdio to the fake MCP server fixture (see Fixtures). No real Gmail, no network.
 - "unit" means no process is started. "static" means the test reads source text.
 - "(neg)" marks a negative case that must fail or refuse.
@@ -25,7 +25,7 @@ Conventions
 |---|---|---|---|---|---|---|---|
 | TC-05 | D45.2, D6.3 | `tests/unit/connector.test.ts` | `[TC-05] to is omitted from arguments when there is no recipient (D45.2)` | integration | `{subject, body}` with `to` undefined | recorded arguments have no `to` key (`"to" in args` is false) | 0 |
 | TC-06 | D45.2 | `tests/unit/connector.test.ts` | `[TC-06] to is sent when the recipient is known (D45.2)` | integration | `{to:"a@x.test", subject, body}` | recorded arguments `to` equals `a@x.test` | 0 |
-| TC-30 | D6.3, D45.2 (Q14) | `tests/unit/connector.test.ts` | `[TC-30] blank to is treated as absent (D6.3)` | integration | `to: "   "` | `to` key absent in arguments | 0 |
+| TC-30 | D6.3, D45.2 (D257) | `tests/unit/connector.test.ts` | `[TC-30] blank to is treated as absent (D6.3)` | integration | `to: "   "` | `to` key absent in arguments | 0 |
 
 ## C. Draft id parsing (FR-D75.1)
 
@@ -45,17 +45,17 @@ Conventions
 | TC-13 | D74.2, FR-F11 (neg) | `tests/unit/commands.test.ts` | `[TC-13] followup with unset variable exits 3 before any draft (D74.2)` | unit (fake deps, env {}) | `followup <owner>` with store containing one owner with open items | exit 3; no createDraft attempted; store file unchanged | 3 |
 | TC-14 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-14] command that does not start is a GmailError (D20.4)` | integration | Command `definitely-missing-binary-xyz` | rejects `GmailError`; message says the server did not start | 3 |
 | TC-15 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-15] server that exits during start-up is a GmailError (D20.4)` | integration | Fake mode `exit-on-start` | rejects `GmailError` | 3 |
-| TC-16 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-16] isError result is a failure even when a draft id is present (D20.4, Q10)` | integration | Fake mode `is-error` with `structuredContent.draftId` set | rejects `GmailError`; returns no draft id | 3 |
-| TC-17 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-17] server without create_draft is a GmailError and no tools/call is sent (D20.4, Q11)` | integration | Fake mode `no-tool` | rejects `GmailError`; zero tools/call requests | 3 |
+| TC-16 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-16] isError result is a failure even when a draft id is present (D20.4, D253)` | integration | Fake mode `is-error` with `structuredContent.draftId` set | rejects `GmailError`; returns no draft id | 3 |
+| TC-17 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-17] server without create_draft is a GmailError and no tools/call is sent (D20.4, D254)` | integration | Fake mode `no-tool` | rejects `GmailError`; zero tools/call requests | 3 |
 | TC-18 | D20.4 (neg) | `tests/unit/connector.test.ts` | `[TC-18] connection dropped mid-call is a GmailError (D20.4)` | integration | Fake mode `drop` (exits after receiving tools/call) | rejects `GmailError` | 3 |
 
 ## E. Timeout (FR-D76)
 
 | TC ID | Spec/FRD ID | Test file | Test name | Type | Input | Expected | Exit |
 |---|---|---|---|---|---|---|---|
-| TC-19 | D76.1 (neg) | `tests/unit/connector.test.ts` | `[TC-19] a call over the limit is a GmailError (D76.1)` | integration, test seam timeout 500 ms (Q2) | Fake mode `hang` | rejects `GmailError` within about 1 s; message says timed out | 3 |
+| TC-19 | D76.1 (neg) | `tests/unit/connector.test.ts` | `[TC-19] a call over the limit is a GmailError (D76.1)` | integration, test seam timeout 500 ms (D245) | Fake mode `hang` | rejects `GmailError` within about 1 s; message says timed out | 3 |
 | TC-20 | D76.1, NFR-R4 (neg) | `tests/unit/connector.test.ts` | `[TC-20] timed-out server process is killed (D76.1)` | integration, seam 500 ms | Fake mode `hang` logs its pid | after rejection, that pid is not alive within 2 s | 3 |
-| TC-32 | D76.2 (Q3) | `tests/unit/connector.test.ts` | `[TC-32] the limit applies per call, not to a whole run (D76.2)` | integration, seam 500 ms | Two sequential `createDraft` calls, each 400 ms | both resolve; total over 500 ms is allowed | 0 |
+| TC-32 | D76.2 (D246) | `tests/unit/connector.test.ts` | `[TC-32] the limit applies per call, not to a whole run (D76.2)` | integration, seam 500 ms | Two sequential `createDraft` calls, each 400 ms | both resolve; total over 500 ms is allowed | 0 |
 
 ## F. Store and retry (FR-D20.5, FR-F5, NFR-R4)
 
@@ -70,11 +70,11 @@ Conventions
 | TC ID | Spec/FRD ID | Test file | Test name | Type | Input | Expected | Exit |
 |---|---|---|---|---|---|---|---|
 | TC-24 | Rule 6, NFR-S1 | `tests/unit/connector.test.ts` | `[TC-24] server process is stopped on success and on failure (rule 6)` | integration | Modes `structured` and `is-error`; fake logs pid | after the promise settles, pid not alive within 2 s, in both modes | 0 / 3 |
-| TC-38 | Rule 6 (Q5) | `tests/unit/connector.test.ts` | `[TC-38] each createDraft call starts its own server process (Q5)` | integration | Two sequential calls on one connector instance; fake logs pid | two different pids | 0 |
+| TC-38 | Rule 6 (D248) | `tests/unit/connector.test.ts` | `[TC-38] each createDraft call starts its own server process (D248)` | integration | Two sequential calls on one connector instance; fake logs pid | two different pids | 0 |
 | TC-25 | NFR-SEC1, NFR-SEC2 | `tests/unit/connector.test.ts` | `[TC-25] connector writes no files (NFR-SEC1)` | integration | Temp dir as cwd and store dir; success mode | directory listing and file contents unchanged | 0 |
-| TC-26 | NFR-SEC1, NFR-O3 (neg) | `tests/unit/connector.test.ts` | `[TC-26] child stderr secret does not appear in the error or output (NFR-SEC1, Q8)` | integration | Fake mode `stderr-secret` writes `SECRET-TOKEN-123` to stderr, then exits non-zero | thrown message and captured stdout/stderr do not contain `SECRET-TOKEN-123` | 3 |
+| TC-26 | NFR-SEC1, NFR-O3 (neg) | `tests/unit/connector.test.ts` | `[TC-26] child stderr secret does not appear in the error or output (NFR-SEC1, D251)` | integration | Fake mode `stderr-secret` writes `SECRET-TOKEN-123` to stderr, then exits non-zero | thrown message and captured stdout/stderr do not contain `SECRET-TOKEN-123` | 3 |
 | TC-35 | NFR-O3 | `tests/unit/connector.test.ts` | `[TC-35] connector writes nothing to stdout (NFR-O3)` | integration, spy on process.stdout.write | Success mode, then `is-error` mode | no stdout writes in either | 0 / 3 |
-| TC-37 | Q7 | `tests/unit/connector.test.ts` | `[TC-37] child inherits the parent environment (Q7)` | integration | Parent env sets `FAKE_MARKER=1`; fake echoes env into log | fake log shows `FAKE_MARKER=1` | 0 |
+| TC-37 | D250 | `tests/unit/connector.test.ts` | `[TC-37] child inherits the parent environment (D250)` | integration | Parent env sets `FAKE_MARKER=1`; fake echoes env into log | fake log shows `FAKE_MARKER=1` | 0 |
 
 ## H. Command, spawn and wiring
 
@@ -82,7 +82,7 @@ Conventions
 |---|---|---|---|---|---|---|---|
 | TC-27 | NFR-M3, D45.3, NFR-A10 | `tests/unit/commands.test.ts` | `[TC-27] followup tests use the fake connector and never spawn a process (NFR-M3)` | unit (child_process spy) | Full followup test run | spawn spy call count is 0 | n/a |
 | TC-29 | D75.2 | `tests/unit/connector.test.ts` | `[TC-29] any server exposing create_draft with the contract works (D75.2)` | integration | Fake mode `alt-server`: different serverInfo name, extra tools present | resolves `{draftId}` | 0 |
-| TC-31 | Risk (Windows), Q4 | `tests/unit/connector.test.ts` | `[TC-31] command with a quoted path containing spaces starts the server (N3, Q4)` | integration | Fixture copied into a temp dir with a space in its path; command `node "<path>"` | resolves `{draftId}` | 0 |
+| TC-31 | Risk (Windows), D247 | `tests/unit/connector.test.ts` | `[TC-31] command with a quoted path containing spaces starts the server (N3, D247)` | integration | Fixture copied into a temp dir with a space in its path; command `node "<path>"` | resolves `{draftId}` | 0 |
 | TC-33 | NFR-C2, NFR-A10, D45.3 | manual (no file) | `MANUAL: real Gmail MCP server creates a draft (NFR-C2)` | MANUAL, run by the user | User's server in `ACTIONTRACK_GMAIL_MCP_CMD`; `actiontrack followup <owner>` | a draft appears in Gmail Drafts; nothing appears in Sent; exit 0 | 0 |
 | TC-34 | NFR-S3 | manual (no file) | `MANUAL: created draft stays in Drafts until the user sends it (NFR-S3)` | MANUAL, run by the user | Draft from TC-33 | draft still in Drafts after the run; the tool did not send it | n/a |
 
@@ -95,7 +95,7 @@ Conventions
    - never write to any file other than `FAKE_GMAIL_LOG`, and never touch the network.
 2. **Test helper** `tests/fixtures/fake-gmail-mcp/helpers.ts` (or inline in the test file). Builds the command string for a mode, creates the temp dir and log file, reads the log, and checks whether a pid is alive (`process.kill(pid, 0)` in a try/catch).
 3. **Spawn spy**: a `vi.mock("node:child_process")` or `vi.spyOn` wrapper, used by TC-12 and TC-27. The module must be imported in a way that lets the spy see the call (decide during T02).
-4. **Timeout seam**: a constructor option on `McpDraftConnector` (for example `timeoutMs`), default 60000, used only by tests (Q2).5. **Temp dirs**: created inside the test with `mkdtempSync(join(tmpdir(), ...))`. Nothing committed to `tests/fixtures/notes/`.
+4. **Timeout seam**: a constructor option on `McpDraftConnector` (for example `timeoutMs`), default 60000, used only by tests (D245).5. **Temp dirs**: created inside the test with `mkdtempSync(join(tmpdir(), ...))`. Nothing committed to `tests/fixtures/notes/`.
 6. **Store fixture** for TC-13, TC-21, TC-23: a tiny store JSON built in the test, not a shared file.
 
 No fixture may contain a real credential or a real email address. Use `a@x.test` style addresses only.

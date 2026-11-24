@@ -112,29 +112,29 @@ Test doubles: fixed clock, fake connector, temp folders, fault-injecting store w
 - Id order. Ids follow file and line order within one run. A new note added later gets higher ids even if its file name sorts earlier. Tests must not assume a global order across runs.
 - Roster order. A roster built from all notes first avoids order effects, but adds a full pass over the notes. Fine at the stated volumes.
 - Performance at 5,000 items. Merge must use a map index, not a scan per item. Checked by TC-66 and TC-65.
-- Windows path and line endings. CRLF and BOM are covered by TC-25, TC-26. File-name sort uses plain code-unit order (decision Q10).
+- Windows path and line endings. CRLF and BOM are covered by TC-25, TC-26. File-name sort uses plain code-unit order (decision D181).
 - Silent drift in summary numbers. Tests assert numbers from the sample (TC-57, TC-68), so wording changes do not break them (D65.3).
 
 ## Decisions
 
-Q1. A line with the same owner and normalised task as a stored item is the same item; on a re-run its due date is updated from the newest copy. Covered by TC-72.
-Q2. A line removed from a note keeps its item and its source record. Nothing is deleted (D52.1).
-Q3. A re-run with no change does not rewrite the store file.
-Q4. If every `.md` note is skipped: exit 1 with the skip report; the store is created empty if missing (D59.3). Covered by TC-71.
-Q5. A missing or unreadable notes folder exits 2, not 4 (D20.3).
-Q6. A single note that exists but cannot be read (permission error or locked) is skipped with reason `unreadable file`, the sixth skip reason from spec 01 (decision Q-02).
-Q7. Ignored line kinds: table-row, action-line, block-quote, code-fence, html-comment, numbered-checkbox. Plain prose is not counted. A checkbox-looking line inside a fence or comment counts once, under its own kind.
-Q8. The same owner and task twice in one note is merged and counted as merged. Covered by TC-48.
-Q9. Items added = new ids this run. Merged = lines folded into an existing item, including every line on a re-run, so a second run reports 0 added.
-Q10. Notes are processed in plain code-unit, case-sensitive file-name order (D69.1).
-Q11. Each top-level entry that is not a `.md` file counts as one ignored file; a subfolder counts as one and its contents are not read. Covered by TC-53.
-Q12. A note that is not skipped counts as read, even if it has skipped lines.
-Q13. On an email conflict, ingest warns and keeps the most recent meeting's email. Dependency: specs 05 and 09 must persist attendee emails.
-Q14. `--store` wins over `ACTIONTRACK_STORE`. Covered by TC-51.
-Q15. "No notes found" is printed to stderr (exit 2).
-Q16. The roster match is listed as a count plus a `file:line` list.
-Q17. The roster holds only resolved full names from attendees and stored owners, never labels such as `(no owner)`.
-Q18. A corrupt store exits 2 with a clear error (D59.4).
-Q19. Spec 06 ID references: D3 and D4 are FRD decisions; P1, P3, P4, O1, O3 and U6 mean NFR-P1, NFR-P3, NFR-P4, NFR-O1, NFR-O3 and NFR-U6; NFR-D3 is determinism. The spec text itself is not changed here.
-Q20. The stdout totals include `(group)` and `(unresolved)`; spec 06 overrides D30.2.
-Q21. For a line merged within one run, the first occurrence in file and line order gives the id; later copies merge into it (D69.1).
+D172. A line with the same owner and normalised task as a stored item is the same item; on a re-run its due date is updated from the newest copy. Covered by TC-72.
+D173. A line removed from a note keeps its item and its source record. Nothing is deleted (D52.1).
+D174. A re-run with no change does not rewrite the store file.
+D175. If every `.md` note is skipped: exit 1 with the skip report; the store is created empty if missing (D59.3). Covered by TC-71.
+D176. A missing or unreadable notes folder exits 2, not 4 (D20.3).
+D177. A single note that exists but cannot be read (permission error or locked) is skipped with reason `unreadable file`, the sixth skip reason from spec 01 (decision Q-02).
+D178. Ignored line kinds: table-row, action-line, block-quote, code-fence, html-comment, numbered-checkbox. Plain prose is not counted. A checkbox-looking line inside a fence or comment counts once, under its own kind.
+D179. The same owner and task twice in one note is merged and counted as merged. Covered by TC-48.
+D180. Items added = new ids this run. Merged = lines folded into an existing item, including every line on a re-run, so a second run reports 0 added.
+D181. Notes are processed in plain code-unit, case-sensitive file-name order (D69.1).
+D182. Each top-level entry that is not a `.md` file counts as one ignored file; a subfolder counts as one and its contents are not read. Covered by TC-53.
+D183. A note that is not skipped counts as read, even if it has skipped lines.
+D184. On an email conflict, ingest warns and keeps the most recent meeting's email. Dependency: specs 05 and 09 must persist attendee emails.
+D185. `--store` wins over `ACTIONTRACK_STORE`. Covered by TC-51.
+D186. "No notes found" is printed to stderr (exit 2).
+D187. The roster match is listed as a count plus a `file:line` list.
+D188. The roster holds only resolved full names from attendees and stored owners, never labels such as `(no owner)`.
+D189. A corrupt store exits 2 with a clear error (D59.4).
+D190. Spec 06 ID references: D3 and D4 are FRD decisions; P1, P3, P4, O1, O3 and U6 mean NFR-P1, NFR-P3, NFR-P4, NFR-O1, NFR-O3 and NFR-U6; NFR-D3 is determinism. The spec text itself is not changed here.
+D191. The stdout totals include `(group)` and `(unresolved)`; spec 06 overrides D30.2.
+D192. For a line merged within one run, the first occurrence in file and line order gives the id; later copies merge into it (D69.1).

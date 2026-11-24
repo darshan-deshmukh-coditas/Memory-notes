@@ -62,7 +62,7 @@ Date arithmetic uses integer day numbers (UTC-based civil-date conversion). No `
 
 Functions and their shape:
 - `resolveDue(wording, meetingDate): DueResolution`. Resolves one phrase. Returns `date` (with optional `warning`), `none`, or `flagged`. Never throws on user wording.
-- `findDuePhrase(text, meetingDate)` (new export, decision OQ-1). Scans an item's text for due phrases (rules 3 to 7 of the spec). Returns `{ due: IsoDate | null, dueFlagged: boolean, warnings: string[], taskText: string }`. Calls `resolveDue` for each candidate phrase. Pure.
+- `findDuePhrase(text, meetingDate)` (new export, decision D96). Scans an item's text for due phrases (rules 3 to 7 of the spec). Returns `{ due: IsoDate | null, dueFlagged: boolean, warnings: string[], taskText: string }`. Calls `resolveDue` for each candidate phrase. Pure.
 - Private helpers: `civilToDay` / `dayToCivil`, `weekdayOf`, `addDays`, `lastDayOfMonth`, `isValidCivil`, `nextWeekdayAfter(meeting, wd)` (D8.2), `weekdayInFollowingWeek(meeting, wd)` (D33.2), `rollYear(candidate, meeting)` (D34.1).
 - `parseCliDate(input, today): IsoDate`. ISO exact. Month-name forms use `today`'s year and roll over from `today`. Anything else throws an `ActiontrackError` subclass whose message names the valid forms (NFR-U3). `cli/index.ts` maps it to exit 2.
 - `statusOf(item, today): ItemStatus`. Returns `done` if stored status is `done`; `overdue` if `due !== null && due < today`; else `open`. Does not mutate the item.
@@ -70,14 +70,14 @@ Functions and their shape:
 
 Weekday rule: bare weekday `W` from meeting day `M` is `M + ((W - M + 7) % 7 || 7)` (strictly after). `next W` is the Monday of the following ISO week plus the offset of `W`. Example: meeting Mon 2026-10-05; bare `Tuesday` gives 2026-10-06; `next Tuesday` gives 2026-10-13.
 
-Rollover rule: for a year-less candidate, take the meeting year. If that date is before `meeting minus 6 calendar months`, use year + 1. Exactly 6 months before is not "more than", so it stays. Month-end clamping: decision OQ-12.
+Rollover rule: for a year-less candidate, take the meeting year. If that date is before `meeting minus 6 calendar months`, use year + 1. Exactly 6 months before is not "more than", so it stays. Month-end clamping: decision D107.
 
-Phrase rule (D48): scan introducers `by`, `due`, `on`, `from`, `for <month name>`. Each candidate phrase is resolved with `resolveDue`. The last one that resolves becomes `due`; its phrase and the dash or comma that joined it are removed from `taskText`. Unresolved phrases stay in `taskText`. Flag when a `by`, `due` or `for <month>` phrase fails and no later phrase resolves. An earlier resolved phrase does not cancel the flag (decision OQ-2).
+Phrase rule (D48): scan introducers `by`, `due`, `on`, `from`, `for <month name>`. Each candidate phrase is resolved with `resolveDue`. The last one that resolves becomes `due`; its phrase and the dash or comma that joined it are removed from `taskText`. Unresolved phrases stay in `taskText`. Flag when a `by`, `due` or `for <month>` phrase fails and no later phrase resolves. An earlier resolved phrase does not cancel the flag (decision D97).
 
 ## Error and flag handling
-- User wording never throws. Unresolvable wording gives `kind: "flagged"` (in `resolveDue`) or `dueFlagged: true` with `due: null` (in `findDuePhrase`). Stored form is `due = null`, `dueFlagged = true`; the wording itself is not stored (decision OQ-14).
+- User wording never throws. Unresolvable wording gives `kind: "flagged"` (in `resolveDue`) or `dueFlagged: true` with `due: null` (in `findDuePhrase`). Stored form is `due = null`, `dueFlagged = true`; the wording itself is not stored (decision D109).
 - A weekday that disagrees with an explicit date returns `kind: "date"` with a `warning` string. The explicit date wins. Ingest turns the warning into exit 1 (spec 06).
-- Invalid calendar dates (`2026-02-30`, `29 Feb` in a non-leap year) are treated as unresolvable wording (decision OQ-10).
+- Invalid calendar dates (`2026-02-30`, `29 Feb` in a non-leap year) are treated as unresolvable wording (decision D105).
 - `parseCliDate` is the only function here that throws. The error is a user error (exit 2 via cli).
 
 ## Dependencies
@@ -96,35 +96,35 @@ Produces:
 - Spec 11: `Clock` and `--today` value; `parseCliDate` error shape for exit 2.
 
 ## Risks
-- False flags. `by 10%`, `by email`, `for September board`, `by Acme` all flag by the spec rules (D48.2). Real notes will show `?` often. This is spec-mandated and accepted (decision OQ-20).
-- Conflict between D48.1 and D48.2 when a resolved phrase is followed by a failing `by` phrase. Resolved by decision OQ-2: the resolved date is kept and the item is flagged.
-- Week-start ambiguity around Sundays. Fixed by decision OQ-3 (ISO week, Monday start).
-- Stub signature `resolveDue(wording, meetingDate)` cannot remove phrases from task text. Resolved by decision OQ-1 (new export `findDuePhrase`).
-- Timezone: NFR-C4 is still open. The local-date rule of D1.3 is decided for this spec (decision OQ-16).
+- False flags. `by 10%`, `by email`, `for September board`, `by Acme` all flag by the spec rules (D48.2). Real notes will show `?` often. This is spec-mandated and accepted (decision D115).
+- Conflict between D48.1 and D48.2 when a resolved phrase is followed by a failing `by` phrase. Resolved by decision D97: the resolved date is kept and the item is flagged.
+- Week-start ambiguity around Sundays. Fixed by decision D98 (ISO week, Monday start).
+- Stub signature `resolveDue(wording, meetingDate)` cannot remove phrases from task text. Resolved by decision D96 (new export `findDuePhrase`).
+- Timezone: NFR-C4 is still open. The local-date rule of D1.3 is decided for this spec (decision D111).
 - Off-by-one at month ends and rollover boundaries. Mitigate with table tests (TC-22, TC-23, TC-10).
-- Sample evidence in D47 (`by Mon (2026-09-18)`): the parentheses are read as meeting dates (decision OQ-19).
+- Sample evidence in D47 (`by Mon (2026-09-18)`): the parentheses are read as meeting dates (decision D114).
 
 ## Decisions
 
-Each line below is settled for this spec. Record them as D77+ in `docs/FRD.md` in a separate change.
+Each line below is settled for this spec. Record them in `docs/FRD.md` under their IDs (D96 to D115 for this spec) in a separate change.
 
-- OQ-1: `resolveDue(wording, meetingDate)` resolves one phrase; `findDuePhrase(text, meetingDate)` is added as a new export for whole-item text.
-- OQ-2: An earlier phrase that resolves and a later failing `by`/`due`/`for <month>` phrase in the same task keep the resolved date and flag the item (e.g. `by Friday` and `by mid-October`: store Friday, flagged).
-- OQ-3: `next week` is the ISO week (Monday to Sunday) after the meeting's week; for a Sunday meeting 2026-10-11, `next week` is 2026-10-12 and `next Tuesday` is 2026-10-13.
-- OQ-4: Bare weekday is the next occurrence strictly after the meeting day; `next <weekday>` is in the following ISO week (Mon 2026-10-05: `Tuesday` is 10-06, `next Tuesday` is 10-13).
-- OQ-5: All wording is case-insensitive (`BY Friday`, `Due`, `Tomorrow`, `Next Week`); the owner `to` stays case-sensitive (D67.1).
-- OQ-6: Month names accept full English names, three-letter abbreviations, and `Sept`; other spellings are unresolvable.
-- OQ-7: Unlisted wording (e.g. `by today`, `tomorrow EOD`, `EOD Friday`, `end of the month`, `2026/10/09`, `10.10.2026`) stores no date and is flagged when introduced by `by`/`due`; `for 4 Mar` stays in the text and is not flagged.
-- OQ-8: `03/04` is never guessed; it is flagged when introduced by by/due/for and kept as plain text when introduced by on/from.
-- OQ-9: An ordinal suffix must match its number (1st, 2nd, 3rd, 4th, 21st, 31st); `Oct 2th` is unresolvable.
-- OQ-10: Invalid or non-leap calendar dates are unresolvable (flagged when introduced by by/due/for); `by 2028-02-29` resolves.
-- OQ-11: An explicit ISO date is stored as written, even outside the meeting window (`by 2026-01-05` in a 2026-09-03 meeting stores 2026-01-05).
-- OQ-12: The rollover cutoff is the meeting date minus 6 calendar months, clamped to month end (31 Aug minus 6 months = 28 or 29 Feb); a date exactly on the cutoff does not roll.
-- OQ-13: Rollover runs before the weekday check (meeting 2026-12-01, `Tue 5 Jan` gives 2027-01-05, a Tuesday, no warning).
-- OQ-14: The stored flag is the `dueFlagged` boolean only; unresolved wording is reported by ingest but not stored. Spec 05 (spec.md) stores `due` and `dueFlagged`; spec 06 (spec.md) lists flagged dates by file and line in its summary and names no stored wording field.
-- OQ-15: The CLI accepts `4 Mar` and `4 March 2026` (D31.6 via D10); weekday names, `today` and slash dates are errors.
-- OQ-16: `today` is the machine's local calendar date (D1.3), via `systemClock`'s local getters. This is decided for this spec; NFR-C4 is still open and is not closed by this decision.
-- OQ-17: A year-less date far in the future uses the meeting's year, with no rollback (D34.1).
-- OQ-18: The resolved phrase is removed together with one adjoining dash or comma, then spaces are trimmed; the exact output string is fixed by TC-29.
-- OQ-19: Parenthesised dates in the D47 sample (`by Mon (2026-09-18)`) are meeting dates, not due dates; check the sample folder before writing acceptance tests.
-- OQ-20: `for <month name>` in task text is flagged by D48.2 (e.g. `Prep deck for September board`); this is kept as specified and recorded as a known false-positive class.
+- D96: `resolveDue(wording, meetingDate)` resolves one phrase; `findDuePhrase(text, meetingDate)` is added as a new export for whole-item text.
+- D97: An earlier phrase that resolves and a later failing `by`/`due`/`for <month>` phrase in the same task keep the resolved date and flag the item (e.g. `by Friday` and `by mid-October`: store Friday, flagged).
+- D98: `next week` is the ISO week (Monday to Sunday) after the meeting's week; for a Sunday meeting 2026-10-11, `next week` is 2026-10-12 and `next Tuesday` is 2026-10-13.
+- D99: Bare weekday is the next occurrence strictly after the meeting day; `next <weekday>` is in the following ISO week (Mon 2026-10-05: `Tuesday` is 10-06, `next Tuesday` is 10-13).
+- D100: All wording is case-insensitive (`BY Friday`, `Due`, `Tomorrow`, `Next Week`); the owner `to` stays case-sensitive (D67.1).
+- D101: Month names accept full English names, three-letter abbreviations, and `Sept`; other spellings are unresolvable.
+- D102: Unlisted wording (e.g. `by today`, `tomorrow EOD`, `EOD Friday`, `end of the month`, `2026/10/09`, `10.10.2026`) stores no date and is flagged when introduced by `by`/`due`; `for 4 Mar` stays in the text and is not flagged.
+- D103: `03/04` is never guessed; it is flagged when introduced by by/due/for and kept as plain text when introduced by on/from.
+- D104: An ordinal suffix must match its number (1st, 2nd, 3rd, 4th, 21st, 31st); `Oct 2th` is unresolvable.
+- D105: Invalid or non-leap calendar dates are unresolvable (flagged when introduced by by/due/for); `by 2028-02-29` resolves.
+- D106: An explicit ISO date is stored as written, even outside the meeting window (`by 2026-01-05` in a 2026-09-03 meeting stores 2026-01-05).
+- D107: The rollover cutoff is the meeting date minus 6 calendar months, clamped to month end (31 Aug minus 6 months = 28 or 29 Feb); a date exactly on the cutoff does not roll.
+- D108: Rollover runs before the weekday check (meeting 2026-12-01, `Tue 5 Jan` gives 2027-01-05, a Tuesday, no warning).
+- D109: The stored flag is the `dueFlagged` boolean only; unresolved wording is reported by ingest but not stored. Spec 05 (spec.md) stores `due` and `dueFlagged`; spec 06 (spec.md) lists flagged dates by file and line in its summary and names no stored wording field.
+- D110: The CLI accepts `4 Mar` and `4 March 2026` (D31.6 via D10); weekday names, `today` and slash dates are errors.
+- D111: `today` is the machine's local calendar date (D1.3), via `systemClock`'s local getters. This is decided for this spec; NFR-C4 is still open and is not closed by this decision.
+- D112: A year-less date far in the future uses the meeting's year, with no rollback (D34.1).
+- D113: The resolved phrase is removed together with one adjoining dash or comma, then spaces are trimmed; the exact output string is fixed by TC-29.
+- D114: Parenthesised dates in the D47 sample (`by Mon (2026-09-18)`) are meeting dates, not due dates; check the sample folder before writing acceptance tests.
+- D115: `for <month name>` in task text is flagged by D48.2 (e.g. `Prep deck for September board`); this is kept as specified and recorded as a known false-positive class.

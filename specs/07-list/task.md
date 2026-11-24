@@ -8,8 +8,8 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 
 ## A. Gate and prerequisites
 
-- [ ] T01 | CLAUDE.md workflow, plan Q1 to Q18 | docs/FRD.md | none (decision record) | none
-  Q1 to Q18 are settled per decision Q1 to Q18 in `plan.md` ("Decisions"). Record them as new decisions D77 and up in `docs/FRD.md` in this same change. Red tests may start once that is done.
+- [ ] T01 | CLAUDE.md workflow, plan D193 to D210 | docs/FRD.md | none (decision record) | none
+  D193 to D210 are settled per decision D193 to D210 in `plan.md` ("Decisions"). Record them as new decisions (D193 to D210 for this spec) in `docs/FRD.md` in this same change. Red tests may start once that is done.
 - [ ] T02 | D1.3, D59, D62, spec 11 rules 3 to 7 | src/clock.ts, src/store/store.ts, src/cli/deps.ts, src/domain/errors.ts (read only) | none (check) | none
   Confirm the interfaces `list` needs exist: `Clock.today()`, a store load function (missing file = empty, corrupt = exit 2), `Deps.out`/`Deps.err`, and an `ActiontrackError` subclass for exit 2. Record any missing piece as a blocker for T17, T30 and T36.
 - [ ] T03 | D59.3, spec 05 rules 4 to 5 | tests/fixtures/store/list-basic.json | fixture for all list tests | T02
@@ -30,7 +30,7 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 - [ ] T09 | D38.1, D34.1, D31.6, D10.1 | tests/unit/commands.test.ts | TC-17, TC-18, TC-19, TC-20, TC-21 (red) | T04
   Year and rollover tests. These fail for the right reason only after spec 02 `parseCliDate` exists; until then they fail with `NotImplementedError`, which is acceptable for red.
 - [ ] T10 | NFR-U3, D54.1, D15 | tests/unit/commands.test.ts | TC-22, TC-23, TC-44, TC-49 (red) | T04
-  Bad-argument tests: bad date, unknown status, bad `--today`, `--status` in any case (Q13).
+  Bad-argument tests: bad date, unknown status, bad `--today`, `--status` in any case (D205).
 - [ ] T11 | D4.4, D31.3, D42.1, D42.2, D72.1 | tests/unit/commands.test.ts | TC-24 to TC-31, TC-50, TC-51, TC-56 (red) | T04
   Owner tests: ambiguous first name, unique first name, full name case, unknown name, the four tokens, token limitation, repeated flag, literal label, roster-only person.
 - [ ] T12 | D15.2, D16.1, D39.2, D58.2, D65.2, D71.1, NFR-U5, FR-L6 | tests/unit/commands.test.ts | TC-32 to TC-37, TC-52, TC-54, TC-55, TC-57 (red) | T04
@@ -58,17 +58,17 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
   On an ambiguous first name, throw an `ActiontrackError` subclass that maps to exit 2 and lists the choices. Only `cli/index.ts` maps to the exit code.
 - [ ] T22 | FR-L1 to FR-L4, D15.1, D15.4, D31.4, D1.1, D1.2, D44.1, D44.2 | src/cli/commands/list.ts | TC-01, TC-06 to TC-16, TC-58, TC-61 (partial, the owner part depends on T20) | T20, spec 02 `statusOf`
   Implement `filterItems(items, filters, today)`. Compute status with `statusOf` (never read a stored overdue). Default keeps open and overdue. `--status` keeps equal computed status. `--due-before` keeps dated items strictly before the parsed cut-off. Combine with AND.
-- [ ] T23 | D15.3, D71.2, Q1 | src/cli/commands/list.ts | TC-02 to TC-05 | T22
+- [ ] T23 | D15.3, D71.2, D193 | src/cli/commands/list.ts | TC-02 to TC-05 | T22
   Implement `sortItems`: dated items by ISO due ascending, undated last, ties and undated groups by numeric id.
 - [ ] T24 | NFR-U3, D54.1 | src/cli/commands/list.ts | TC-23, TC-44, TC-49 | T10
-  Validate `--status` against `open|done|overdue` case-insensitively (Q13). Error names the valid values. Validate `--today` as ISO, with the valid format in the message.
+  Validate `--status` against `open|done|overdue` case-insensitively (D205). Error names the valid values. Validate `--today` as ISO, with the valid format in the message.
 - [ ] T25 | D31.6, D38.1, NFR-U3 | src/cli/commands/list.ts | TC-20, TC-21, TC-22 | T09, spec 02 `parseCliDate`
   Use `parseCliDate` for `--due-before`. Any failure is exit 2 and the message names the valid forms.
 - [ ] T26 | D15.2, D16.1, D39.2, D58.2, D71.1, FR-L6 | src/cli/commands/list.ts | TC-32 to TC-36 | T22, T23
   Implement `renderRows(items)` into table rows: id, owner, task, due (`-`, `?` or date), status, sources joined by ", " (file names only).
-- [ ] T27 | D65.2, NFR-U5, Q9 | src/cli/commands/list.ts | TC-37, TC-54, TC-55 | T26
+- [ ] T27 | D65.2, NFR-U5, D201 | src/cli/commands/list.ts | TC-37, TC-54, TC-55 | T26
   Implement plain aligned table: header row, columns padded to widest cell by display width (helper), no ANSI codes, no truncation. No new dependency (ask first if one seems needed).
-- [ ] T28 | D15.5, D58.2, Q3, Q4 | src/cli/commands/list.ts | TC-38, TC-39, TC-59, TC-60 | T22, T23
+- [ ] T28 | D15.5, D58.2, D195, D196 | src/cli/commands/list.ts | TC-38, TC-39, TC-59, TC-60 | T22, T23
   Implement `renderJson(items)`: array of `{id, owner, task, due, dueFlagged, status, sources}`, `sources` as full `{file, meetingDate, line}` records, status computed.
 - [ ] T29 | D31.5, D71.3, D59.3, FR-L8 | src/cli/commands/list.ts | TC-40, TC-41, TC-43, TC-52, TC-28 | T26, T28
   No-match output: table mode prints `No items match.` to `deps.out`, no header. JSON mode prints `[]` only. Both exit 0.
@@ -100,9 +100,9 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 
 - [ ] T40 | CLAUDE.md step 4 | docs/TRACEABILITY.md | n/a | T19 (set `wip` when red tests are in), T39 (set `done` when green)
   Set the status of the BR-03 row and the BR-04 row to `wip` at T19, and to `done` once all list tests are green. Do not change other rows.
-- [ ] T41 | D77+ (from T01) | docs/FRD.md | n/a | T01
+- [ ] T41 | D193 to D210 (from T01) | docs/FRD.md | n/a | T01
   Confirm that each answer from T01 is recorded as a new decision. No edit to earlier decisions.
-- [ ] T42 | Q18, spec 07 item 8 | specs/07-list/spec.md | TC-63 | T01
+- [ ] T42 | D210, spec 07 item 8 | specs/07-list/spec.md | TC-63 | T01
   Only if the requester asks: update spec 07 item 8 to name exit 4 (D62.1). Otherwise leave spec 07 unchanged.
 - [ ] T43 | CLAUDE.md exit codes | CLAUDE.md | n/a | T01 (ask first)
   The exit-code list in CLAUDE.md omits exit 4 (D62.1). Propose the change to the requester. Do not edit CLAUDE.md without approval.
@@ -122,7 +122,7 @@ Blocked tasks: T17 and T36 need specs 02, 05 and 06 to be implemented. Everythin
 
 ## Definition of done
 
-- [ ] All decisions in `plan.md`'s Decisions section (Q1 to Q18) are recorded as D77+ decisions in `docs/FRD.md`.
+- [ ] All decisions in `plan.md`'s Decisions section (D193 to D210) are recorded in `docs/FRD.md` under their IDs.
 - [ ] Every test in `testcases.md` exists, names its spec ID in brackets, and is green (or blocked by a named dependency).
 - [ ] `list` never writes the store and never stores `overdue` (ADR 0002, D44.1).
 - [ ] The default view, filters, AND, sort, table, JSON, no-match and exit codes 0, 2 and 4 behave as in `spec.md` and in the decisions it cites.

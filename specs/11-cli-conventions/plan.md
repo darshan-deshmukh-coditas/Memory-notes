@@ -18,7 +18,7 @@ Make the cross-cutting rules that every command shares true in code and in tests
 | Exit code 4 | D62.1 | `src/domain/exit-codes.ts` has no `INTERNAL` | Add `INTERNAL: 4` |
 | Unexpected error exit | D62.1 | Catch-all sets `EXIT.WARNINGS` (1) | Must set 4 and print a clear stderr message |
 | Bad arguments exit | D20.3 | Commander parse errors (unknown command, unknown flag, missing argument, bad `--status` choice, `parseId` failure) exit 1 by default | Need `exitOverride` or equivalent so these exit 2 |
-| Error mapping in one place | spec 11 item 6 | Only `index.ts` maps `ActiontrackError` to codes | Commands return `ExitCode` directly; see decision O-9 |
+| Error mapping in one place | spec 11 item 6 | Only `index.ts` maps `ActiontrackError` to codes | Commands return `ExitCode` directly; see decision D272 |
 | Streams | NFR-O3, D30.3 | `out` and `err` are injected through `Deps`; `console.log` and `console.error` only in `index.ts` | None |
 | No log file | NFR-O3, N4 | No log code exists | Add a test that proves none is created |
 | Injected clock | NFR-M2 | `clock.ts` defines `Clock`, `systemClock`, `fixedClock` | Confirm no other module calls `new Date()` (only `clock.ts` does, today) |
@@ -72,14 +72,14 @@ Out of scope:
 | NFR-C1, N3 | Paths via `node:path`; suite runs on Windows, macOS, Linux | all | TC-35, TC-36 |
 | NFR-O1 | Each command prints what it did (counts, ids) on stdout | each command | TC-37 |
 | D55 | CRLF and LF treated alike (conventions point only) | `parser/note.ts` | TC-38 |
-| NFR-C4 | Timezone and locale rule for dates | `clock.ts` | TC-39 (uses O-13) |
+| NFR-C4 | Timezone and locale rule for dates | `clock.ts` | TC-39 (uses D276) |
 | spec 11 item 6 | Only `cli/index.ts` maps errors to exit codes | `cli/index.ts` | TC-40 |
 | spec 11 item 8 | No module other than `clock.ts` reads the system date | `clock.ts` | TC-41 |
 | spec 11 item 4 | Only `ACTIONTRACK_STORE` and `ACTIONTRACK_GMAIL_MCP_CMD` are read | `cli/index.ts`, `store/store.ts` | TC-42 |
 
 ## Design approach
 
-1. **One exit-code mapping.** `cli/index.ts` is the only file that turns an error or result into a process exit code. Commands return a value (an `ExitCode` or a result object, see O-9) and throw `ActiontrackError` subclasses. The catch block maps:
+1. **One exit-code mapping.** `cli/index.ts` is the only file that turns an error or result into a process exit code. Commands return a value (an `ExitCode` or a result object, see D272) and throw `ActiontrackError` subclasses. The catch block maps:
    - `ActiontrackError` gives `e.exitCode` and `error: <message>` on stderr.
    - Commander parse errors give exit 2.
    - Anything else gives exit 4 and `unexpected error: <message>` on stderr.
@@ -88,8 +88,8 @@ Out of scope:
 3. **Highest wins.** Commands that can produce several codes (`ingest`, `followup --all`) compute the maximum themselves. `index.ts` only sets `process.exitCode` once.
 4. **Shared stderr reporter.** `Deps.err` is the only way to write a warning or error. `index.ts` builds it as `console.error`. Tests inject an array-collecting fake.
 5. **Testable entry point.** Split `index.ts` into `buildProgram(deps): Command` and `run(argv, deps): Promise<ExitCode>`, with the bin entry only calling `run(process.argv, realDeps)`. This keeps `index.ts` the only place real dependencies are built (CLAUDE.md) and lets tests call `run` in process with fake deps. Where a test needs the real process, spawn `node --import tsx src/cli/index.ts` with a temp working directory.
-6. **`--today` handling.** When `--today` is given, `index.ts` validates it (ISO `YYYY-MM-DD`, real calendar date, see O-8) and passes `{ ...deps, clock: fixedClock(value) }` into the command. Invalid values exit 2 before any command runs, so no store is read or written.
-7. **Store path resolution order** (spec 05 states it, FRD D17.2 does not): `--store` flag, then `ACTIONTRACK_STORE`, then the default `.actiontrack/items.json` relative to the current working directory (D59.1). Recorded as decision O-1.
+6. **`--today` handling.** When `--today` is given, `index.ts` validates it (ISO `YYYY-MM-DD`, real calendar date, see D271) and passes `{ ...deps, clock: fixedClock(value) }` into the command. Invalid values exit 2 before any command runs, so no store is read or written.
+7. **Store path resolution order** (spec 05 states it, FRD D17.2 does not): `--store` flag, then `ACTIONTRACK_STORE`, then the default `.actiontrack/items.json` relative to the current working directory (D59.1). Recorded as decision D264.
 8. **Global options.** Use one helper that adds `--store` and `--today` to every command, so the four commands cannot drift apart.
 9. **Paths.** Use `node:path` (`join`, `resolve`, `isAbsolute`) everywhere. Never build paths by string concatenation with `/`.
 
@@ -108,31 +108,31 @@ Out of scope:
 | Windows path quoting in tests and docs (`C:\...` and spaces) | Tests fail only on Windows | Build paths with `node:path`; add a test folder name with a space (TC-35) |
 | Commander version quirks (13.x): parse errors call `process.exit` directly, and help output goes to stdout or stderr depending on the error path | Exit codes and streams differ from spec | Use `exitOverride` and `configureOutput({ writeErr })`; pin behaviour with TC-04 to TC-08 |
 | Stdout and stderr mixing breaks `--json` | Scripts parse warnings as JSON | Warnings only ever go through `Deps.err`; TC-28 checks stdout is valid JSON when warnings exist |
-| Broken pipe on stdout (`actiontrack list --json \| head`) | Unexpected error, exit 4 for a benign case | See O-12 |
+| Broken pipe on stdout (`actiontrack list --json \| head`) | Unexpected error, exit 4 for a benign case | See D275 |
 | `process.exitCode` set in several places | Wrong code wins silently | Single assignment at the end of `run` (design item 3) |
 | In-process tests importing `index.ts` run the CLI at import time | Test runner exits early or hangs | Design item 5 |
 | `systemClock` used in tests by accident | Non-repeatable overdue results | Lint-style test TC-41 greps for `new Date(` outside `clock.ts` |
 
 ## Decisions
 
-Each decision below is settled. O-1 and O-7 to O-10 were answered by the user; the others were settled from the earlier list of open points.
+Each decision below is settled. D264 and D270 to D273 were answered by the user; the others were settled from the earlier list of open points.
 
-- **O-1** `--store` beats `ACTIONTRACK_STORE`, which beats the default path.
-- **O-2** An empty `ACTIONTRACK_STORE` is treated as unset.
-- **O-3** A relative `--store` or `ACTIONTRACK_STORE` path is resolved against the current working directory.
-- **O-4** With `--json`, stdout holds only the JSON document; warnings and errors stay on stderr.
-- **O-5** No `--version` or `-V`; an unknown flag gives exit 2.
-- **O-6** No command given: help is printed to stdout, exit 2.
-- **O-7** Unknown command or unknown flag: exit 2.
-- **O-8** `--today` with a valid format but an impossible date (`2026-02-30`): exit 2, message gives the valid format.
-- **O-9** Commands throw `ActiontrackError` subclasses for errors and may return `ExitCode` for OK and WARNINGS only; only `cli/index.ts` maps them to exit codes.
-- **O-10** `followup` with neither or both of `<owner>` and `--all`: exit 2, message names the two valid forms.
-- **O-11** `ACTIONTRACK_GMAIL_MCP_CMD` unset when `followup` runs: exit 2, message names the variable.
-- **O-12** EPIPE on stdout exits 0 silently; any other stdout write error is exit 4.
-- **O-13** "Today" is the system local date (D1.3); `--today` overrides it. NFR-C4 is closed by D1.3.
-- **O-14** `list` prints full task text with no truncation, as plain aligned columns (D65.2).
-- **O-15** `list` breaks equal due dates by ascending id.
-- **O-16** Default store is `.actiontrack/items.json` under the working directory (D59.1); spec 05 owns the exact name.
+- **D264** `--store` beats `ACTIONTRACK_STORE`, which beats the default path.
+- **D265** An empty `ACTIONTRACK_STORE` is treated as unset.
+- **D266** A relative `--store` or `ACTIONTRACK_STORE` path is resolved against the current working directory.
+- **D267** With `--json`, stdout holds only the JSON document; warnings and errors stay on stderr.
+- **D268** No `--version` or `-V`; an unknown flag gives exit 2.
+- **D269** No command given: help is printed to stdout, exit 2.
+- **D270** Unknown command or unknown flag: exit 2.
+- **D271** `--today` with a valid format but an impossible date (`2026-02-30`): exit 2, message gives the valid format.
+- **D272** Commands throw `ActiontrackError` subclasses for errors and may return `ExitCode` for OK and WARNINGS only; only `cli/index.ts` maps them to exit codes.
+- **D273** `followup` with neither or both of `<owner>` and `--all`: exit 2, message names the two valid forms.
+- **D274** `ACTIONTRACK_GMAIL_MCP_CMD` unset when `followup` runs: exit 2, message names the variable.
+- **D275** EPIPE on stdout exits 0 silently; any other stdout write error is exit 4.
+- **D276** "Today" is the system local date (D1.3); `--today` overrides it. NFR-C4 is closed by D1.3.
+- **D277** `list` prints full task text with no truncation, as plain aligned columns (D65.2).
+- **D278** `list` breaks equal due dates by ascending id.
+- **D279** Default store is `.actiontrack/items.json` under the working directory (D59.1); spec 05 owns the exact name.
 
 Settled, not open (for reference): date and "today" source (D1.3, D54.1), exit code set (D20, D62), no colour in output (D65.2), `--json` for `list` (D15.5), stderr for warnings (NFR-O3), no log file (N4), supported OS and Node 22 (N3, `package.json` engines).
 
@@ -141,4 +141,4 @@ Settled, not open (for reference): date and "today" source (D1.3, D54.1), exit c
 - Every requirement row in the map has a passing test (see `testcases.md`).
 - `npm run check` passes on Windows (the dev machine) and in CI on macOS and Linux, if available (NFR-C1).
 - `docs/TRACEABILITY.md` row "Cross-cutting: store, CLI" and rows NFR-U*, NFR-O3, NFR-C1 show `done`.
-- Decisions O-1 to O-16 are implemented and each has a passing test.
+- Decisions D264 to D279 are implemented and each has a passing test.

@@ -99,32 +99,32 @@ Show stored action items, narrowed by owner, status and due date, as a plain tab
 
 ## Risks
 - **Midnight and time zones.** "Today" is the system's local date (D1.3). An item due on the day before a local midnight may change status between two runs. Stored dates are plain dates with no time zone, so the comparison itself is safe. The risk is in how the clock is read. Mitigation: read the clock once per command and pass `today` down; test the boundary with a fixed clock (TC-62).
-- **Table alignment with wide Unicode.** Names such as `Zoe Angstrom` (accents), CJK or emoji can have a different display width from their string length, so columns misalign. Mitigation: pad by a display-width helper; no new dependency without asking (CLAUDE.md). See decision Q9.
+- **Table alignment with wide Unicode.** Names such as `Zoe Angstrom` (accents), CJK or emoji can have a different display width from their string length, so columns misalign. Mitigation: pad by a display-width helper; no new dependency without asking (CLAUDE.md). See decision D201.
 - **Performance.** The filters and sort are O(n log n) and cannot be the slow part. The real cost is loading a 5,000-item JSON store. Measure the whole command, not just the pure functions (TC-47). The 1 s limit is on a developer machine; a CI timing test can flake, so use a generous bound and report the measured time.
 - **Commander choice errors.** `--status` uses commander's `.choices()`. Commander's own error message and exit code must be mapped to exit 2 with the valid values listed (NFR-U3). Verify this in TC-23.
 - **Stored ids.** Filtering must never renumber. Ids come from the store (D14.1), so a filtered view can have gaps (TC-53).
 
 ## Decisions
-Every item below is settled. Each line is binding. Record each as a new decision (D77 and up) in `docs/FRD.md`.
+Every item below is settled. Each line is binding. Record each as a new decision (D193 to D210 for this spec) in `docs/FRD.md`.
 
-- **Q1** Undated items are listed after all dated items, ordered by id.
-- **Q2** No special case: undated items are never overdue, so they never appear under `--status overdue` (D1.2).
-- **Q3** `--json` output is a bare array of item objects, with no envelope and keys in the order the spec lists.
-- **Q4** `dueFlagged` in JSON reports the stored flag as it is.
-- **Q5** An empty result exits 0.
-- **Q6** A table with zero rows prints only `No items match.`, with no header row.
-- **Q7** First-name matching counts the stored roster and item owners; a first name counts as a person only when a full name exists.
-- **Q8** First-name matching is a case-insensitive exact match on the first word of a full name.
-- **Q9** Column widths use display width: wide characters count as 2; task text and sources are not truncated; no new dependency.
-- **Q10** `--due-before` accepts whatever `parseCliDate` accepts (spec 02 rule 11), including the D10.1 forms.
-- **Q11** Rollover follows D34.1; a date exactly 6 months before today is not rolled forward (TC-19 tests this).
-- **Q12** An impossible calendar date, an empty `--due-before ""`, or `Feb 29` without a year in a non-leap year exits 2, with the valid forms listed.
-- **Q13** `--status` values are case-insensitive: `open`, `done` and `overdue` are accepted in any case.
-- **Q14** A repeated flag takes its last value.
-- **Q15** A literal owner label is not accepted as `--owner`; only the tokens `none|group|ambiguous|unresolved` are.
-- **Q16** `--json` with a missing store prints `[]`, exits 0, and prints no text line.
-- **Q17** `list` prints no warnings to stderr on a valid run.
-- **Q18** Exit 4 (unexpected internal error, D62.1) applies to `list`, as spec 11 states.
+- **D193** Undated items are listed after all dated items, ordered by id.
+- **D194** No special case: undated items are never overdue, so they never appear under `--status overdue` (D1.2).
+- **D195** `--json` output is a bare array of item objects, with no envelope and keys in the order the spec lists.
+- **D196** `dueFlagged` in JSON reports the stored flag as it is.
+- **D197** An empty result exits 0.
+- **D198** A table with zero rows prints only `No items match.`, with no header row.
+- **D199** First-name matching counts the stored roster and item owners; a first name counts as a person only when a full name exists.
+- **D200** First-name matching is a case-insensitive exact match on the first word of a full name.
+- **D201** Column widths use display width: wide characters count as 2; task text and sources are not truncated; no new dependency.
+- **D202** `--due-before` accepts whatever `parseCliDate` accepts (spec 02 rule 11), including the D10.1 forms.
+- **D203** Rollover follows D34.1; a date exactly 6 months before today is not rolled forward (TC-19 tests this).
+- **D204** An impossible calendar date, an empty `--due-before ""`, or `Feb 29` without a year in a non-leap year exits 2, with the valid forms listed.
+- **D205** `--status` values are case-insensitive: `open`, `done` and `overdue` are accepted in any case.
+- **D206** A repeated flag takes its last value.
+- **D207** A literal owner label is not accepted as `--owner`; only the tokens `none|group|ambiguous|unresolved` are.
+- **D208** `--json` with a missing store prints `[]`, exits 0, and prints no text line.
+- **D209** `list` prints no warnings to stderr on a valid run.
+- **D210** Exit 4 (unexpected internal error, D62.1) applies to `list`, as spec 11 states.
 
 **Spec inconsistencies noted (no code change needed):**
 - CLAUDE.md lists exit codes 0 to 3. FRD D62.1 adds exit 4. Update CLAUDE.md when the requester confirms.

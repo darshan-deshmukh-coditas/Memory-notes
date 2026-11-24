@@ -2,7 +2,7 @@
 
 Conventions
 - Test names start with the ID in brackets, for example `[D21.1] reads YAML front matter`.
-- `Q-nn` rows test the settled decision of the same ID in `plan.md` (Decisions section). Their names carry the decision ID; once the decision is recorded as D77 or later in `docs/FRD.md`, the name uses that D-number, in the same change as the decision.
+- `D-nn` rows test the settled decision of the same ID in `plan.md` (Decisions section). Their names carry the decision ID; once the decision is recorded in `docs/FRD.md` under its ID within D77 to D95 for this spec, the name uses that D-number, in the same change as the decision.
 - Type `unit` = pure function or readNote on a temp file. `property` = seeded loop of generated inputs (no new dependency). `acceptance` = sample `notes/` folder.
 - "Never throws" rows assert the returned value, not just the absence of an exception.
 - Fixture paths are under `tests/fixtures/notes/` unless marked "temp" (created inside the test, see Fixtures needed).
@@ -37,7 +37,7 @@ Conventions
 | TC-24 | D55.1 | tests/unit/edge-cases.test.ts | [D55.1] UTF-8 BOM is stripped and is not a failure | unit | temp file: BOM + `labelled-basic.md` content | ok result, same as without BOM |
 | TC-25 | D55.2 | tests/unit/edge-cases.test.ts | [D55.2] CRLF gives the same note and items as LF | unit | `labelled-basic.md` as LF, and the same text as CRLF (temp) | identical meetingDate, attendees, items, line numbers |
 | TC-26 | NFR-R1 | tests/unit/edge-cases.test.ts | [NFR-R1] readNote never throws for a missing path or a directory path | unit | path that does not exist; path that is a directory | ok:false with a SkipReport; no exception |
-| TC-27 | NFR-R2, NFR-R1 | tests/unit/edge-cases.test.ts | [NFR-R2] every skip has file and a fixed reason, over generated inputs | property | 200 seeded random byte buffers written to temp files | each result ok:true, or ok:false with file set and reason in the six strings (D65.1 as amended by Q-02); no throw |
+| TC-27 | NFR-R2, NFR-R1 | tests/unit/edge-cases.test.ts | [NFR-R2] every skip has file and a fixed reason, over generated inputs | property | 200 seeded random byte buffers written to temp files | each result ok:true, or ok:false with file set and reason in the six strings (D65.1 as amended by D78); no throw |
 | TC-28 | D65.1 | tests/unit/edge-cases.test.ts | [D65.1] skip reasons are exactly the six fixed strings | unit | constant from `note.ts` and extractItems skip output | set equals `{empty file, not valid UTF-8, missing date, unparseable date, unreadable file, empty action item}` |
 | TC-29 | NFR-R5 | tests/unit/edge-cases.test.ts | [NFR-R5] 1 MB single-line note is read without error | unit | temp file: one 1 MB line with a checkbox at the end | ok; item found; no throw |
 | TC-30 | NFR-SEC4 | tests/unit/edge-cases.test.ts | [NFR-SEC4] shell text in the date value is an unparseable date, not run | unit | `Date: 2026-09-09; rm -rf .` with a spy on `child_process` and `fs` writes | skip reason `unparseable date`; spies called 0 times |
@@ -49,8 +49,8 @@ Conventions
 | TC-36 | D26.2 | tests/unit/ingest-parsing.test.ts | [D26.2] `ACTION:` line is not an item, counted | unit | `ACTION: Karan to circulate summary tomorrow` | 0 items; ignored has one `ACTION line` entry |
 | TC-37 | D27.1, D27.2 | tests/unit/ingest-parsing.test.ts | [D27.1] checkbox inside a block quote is not an item, counted | unit | `> - [ ] Quoted task` (`2026-09-21-incident-review.md`) | 0 items from that line; ignored has `block quote` |
 | TC-38 | D27.1, D27.2 | tests/unit/ingest-parsing.test.ts | [D27.1] checkbox inside a backtick fence is not an item, counted | unit | fence ```` ``` ```` around `- [ ] in code` | 0 items; ignored has `code fence` |
-| TC-39 | Q-05 | tests/unit/ingest-parsing.test.ts | [Q-05] checkbox inside a `~~~` fence is not an item | unit | fence `~~~` around `- [ ] in code` | 0 items; ignored has `code fence` |
-| TC-40 | Q-05 | tests/unit/ingest-parsing.test.ts | [Q-05] unclosed fence runs to end of file, later checkboxes ignored | unit | fence opened, `- [ ] a` and `- [ ] b` after it, no closing fence | 0 items; no throw |
+| TC-39 | D81 | tests/unit/ingest-parsing.test.ts | [D81] checkbox inside a `~~~` fence is not an item | unit | fence `~~~` around `- [ ] in code` | 0 items; ignored has `code fence` |
+| TC-40 | D81 | tests/unit/ingest-parsing.test.ts | [D81] unclosed fence runs to end of file, later checkboxes ignored | unit | fence opened, `- [ ] a` and `- [ ] b` after it, no closing fence | 0 items; no throw |
 | TC-41 | D64.2 | tests/unit/ingest-parsing.test.ts | [D64.2] single-line HTML comment with a checkbox is ignored, counted | unit | `<!-- - [ ] hidden -->` (`2026-10-09-security-review.md`) | 0 items; ignored has `HTML comment` |
 | TC-42 | D64.2 | tests/unit/ingest-parsing.test.ts | [D64.2] multi-line HTML comment ignored from `<!--` to `-->` | unit | three lines: `<!--`, `- [ ] hidden`, `-->` | 0 items; ignored has the checkbox line |
 | TC-43 | D64.3 | tests/unit/ingest-parsing.test.ts | [D64.3] checkbox in an indented (4 space) block is an item | unit | `    - [ ] indented task` | one item |
@@ -58,7 +58,7 @@ Conventions
 | TC-45 | D50.1 | tests/unit/edge-cases.test.ts | [D50.1] `- [ ]` with no text skipped at file:line, rest of note kept | unit | body: `- [ ] Real task`, `- [ ]`, `- [x] Done task` | skip {file, line of empty box, reason `empty action item`}; 2 items returned |
 | TC-46 | D50.2 | tests/unit/edge-cases.test.ts | [D50.2] checkbox with text and no owner pattern is kept | unit | `- [ ] Update the runbook` | one item, text `Update the runbook` |
 | TC-47 | D50.1 | tests/unit/edge-cases.test.ts | [D50.1] checkbox followed only by spaces is `empty action item` | unit | `- [ ]   ` (trailing spaces) | skip with reason `empty action item`; no item |
-| TC-48 | Q-08 | tests/unit/ingest-parsing.test.ts | [Q-08] line numbers are absolute file lines, header counted, CRLF once | unit | `labelled-basic.md` with checkbox on file line 9 (after header) | item line = 9 (not body-relative) |
+| TC-48 | D84 | tests/unit/ingest-parsing.test.ts | [D84] line numbers are absolute file lines, header counted, CRLF once | unit | `labelled-basic.md` with checkbox on file line 9 (after header) | item line = 9 (not body-relative) |
 | TC-49 | NFR-SEC4 | tests/unit/edge-cases.test.ts | [NFR-SEC4] hostile item text returned verbatim, nothing executed | unit | `- [ ] $(rm -rf ~) \`whoami\` <script>x</script> ; DROP TABLE items` | one item; text equals input; spies on `child_process` and `fs` writes: 0 calls |
 | TC-50 | NFR-A1 | tests/acceptance/sample-notes.test.ts | [NFR-A1] parse stage over the sample folder completes without throw | acceptance | `notes/` (35 `.md`, 1 `.txt`) | completes; no uncaught error |
 | TC-51 | NFR-A2 | tests/acceptance/sample-notes.test.ts | [NFR-A2] 4 notes skipped with exact reasons, 31 read | acceptance | `notes/` | skipped: `2026-09-09-notes-final-v2.md` `empty file`; `scratch.md` `not valid UTF-8`; `untitled.md` `missing date`; `2026-10-03-sales-pipeline.md` `unparseable date`; 31 ok; 35 `.md` seen |
@@ -68,22 +68,22 @@ Conventions
 | TC-55 | D21.1 | tests/acceptance/sample-notes.test.ts | [D21.1] sample YAML notes are read with attendees | acceptance | `2026-09-16-standup.md`, `2026-09-30-standup.md` | both ok; attendees non-empty; meetingDate ISO |
 | TC-56 | D55.2 | tests/acceptance/sample-notes.test.ts | [D55.2] sample CRLF note gives item line numbers on the LF line count | acceptance | `2026-10-02-finance-sync.md` | ok; item lines match the 1-based line numbers of the same text with LF |
 | TC-57 | D21.2 | tests/acceptance/sample-notes.test.ts | [D21.2] every read sample note has an ISO meetingDate | acceptance | all 31 read notes | each meetingDate matches `^\d{4}-\d{2}-\d{2}$` and is a real date |
-| TC-58 | Q-01 | tests/unit/edge-cases.test.ts | [Q-01] blank `Date:` value counts as no date | unit | `2026-09-01-x.md` with `Date:` (blank) | meetingDate = `2026-09-01` (fallback); `untitled.md` with blank Date gives `missing date` |
-| TC-59 | Q-02 | tests/unit/edge-cases.test.ts | [Q-02] unreadable file skipped with reason `unreadable file` | unit | temp file with read permission removed (POSIX); on Windows, mock `fs.readFile` to reject with EACCES | ok:false; reason `unreadable file`; no throw |
-| TC-60 | Q-03 | tests/unit/ingest-parsing.test.ts | [Q-03] `.MD` and `.x.md` are notes; a directory named `y.md` is not | unit | temp folder: `A.MD`, `.x.md`, dir `y.md/` | notes = [`.x.md`, `A.MD`] in name order; directory counted as ignored |
-| TC-61 | Q-04 | tests/unit/ingest-parsing.test.ts | [Q-04] inside a fence only checkbox-looking lines are counted as ignored | unit | fence with `plain text`, `- [ ] a`, `| cell |` lines | ignored count = 1 (the checkbox line only) |
-| TC-62 | Q-06 | tests/unit/edge-cases.test.ts | [Q-06] date with a time component is `unparseable date` | unit | `Date: 2026-09-09 10:30` | skip reason `unparseable date` |
-| TC-63 | Q-07 | tests/unit/edge-cases.test.ts | [Q-07] a skipped note returns no Note body and no items | unit | `2026-10-03-sales-pipeline.md` | readNote ok:false; result has no `body` or items field |
-| TC-64 | Q-09 | tests/unit/ingest-parsing.test.ts | [Q-09] blank attendee entries from `a,,b` and trailing commas are dropped | unit | `Attendees: Anita Rao,, Rahul Mehta,` and `Attendees: <x@y.z>` | attendees = Anita Rao, Rahul Mehta; email-only entry dropped |
-| TC-65 | Q-10 | tests/unit/edge-cases.test.ts | [Q-10] impossible leading date in filename is `missing date` | unit | `2026-13-01-x.md`, no Date line | skip reason `missing date` |
-| TC-66 | Q-11 | tests/unit/ingest-parsing.test.ts | [Q-11] month names are case-insensitive; ordinals and abbreviations are unparseable | unit | `9 SEPTEMBER 2026` (ok); `9th September 2026` and `9 Sep 2026` (skip) | first gives 2026-09-09; the other two give `unparseable date` |
-| TC-67 | Q-12 | tests/unit/ingest-parsing.test.ts | [Q-12] when YAML and labelled headers both exist, YAML wins | unit | YAML `date: 2026-09-09` plus body lead `Date: 2026-09-10` (no `##` in between) | meetingDate = `2026-09-09` |
-| TC-68 | Q-13 | tests/unit/edge-cases.test.ts | [Q-13] unclosed YAML front matter is not a YAML block | unit | `---` line, `date: 2026-09-09`, no closing `---`, then `Date: 2026-09-10` | labelled line is read: meetingDate = `2026-09-10` |
-| TC-69 | Q-14 | tests/unit/edge-cases.test.ts | [Q-14] lone CR is content, no crash, no split | unit | temp file: `Date: 2026-09-09\r- [ ] task` (CR only) | ok; no throw; 0 items (one line, not a checkbox at line start) |
-| TC-70 | Q-15 | tests/unit/ingest-parsing.test.ts | [Q-15] `-[ ]` is not an item; `- [ ]text` is an item with text `text` | unit | `-[ ] no space`, `- [ ]text` | 1 item, text `text`; first line not an item |
-| TC-71 | Q-16 | tests/unit/ingest-parsing.test.ts | [Q-16] with two `Date:` lines in the lead, the first wins | unit | `Date: 2026-09-09` then `Date: 2026-09-10` | meetingDate = `2026-09-09` |
-| TC-72 | Q-17 | tests/unit/edge-cases.test.ts | [Q-17] BOM-only file is `empty file` | unit | temp file: bytes `EF BB BF` | skip reason `empty file` |
-| TC-73 | Q-18 | tests/unit/ingest-parsing.test.ts | [Q-18] missing folder throws a typed ActiontrackError | unit | path that does not exist | throws `ActiontrackError` subclass (not a plain Error); spec 06 maps to exit 2 |
+| TC-58 | D77 | tests/unit/edge-cases.test.ts | [D77] blank `Date:` value counts as no date | unit | `2026-09-01-x.md` with `Date:` (blank) | meetingDate = `2026-09-01` (fallback); `untitled.md` with blank Date gives `missing date` |
+| TC-59 | D78 | tests/unit/edge-cases.test.ts | [D78] unreadable file skipped with reason `unreadable file` | unit | temp file with read permission removed (POSIX); on Windows, mock `fs.readFile` to reject with EACCES | ok:false; reason `unreadable file`; no throw |
+| TC-60 | D79 | tests/unit/ingest-parsing.test.ts | [D79] `.MD` and `.x.md` are notes; a directory named `y.md` is not | unit | temp folder: `A.MD`, `.x.md`, dir `y.md/` | notes = [`.x.md`, `A.MD`] in name order; directory counted as ignored |
+| TC-61 | D80 | tests/unit/ingest-parsing.test.ts | [D80] inside a fence only checkbox-looking lines are counted as ignored | unit | fence with `plain text`, `- [ ] a`, `| cell |` lines | ignored count = 1 (the checkbox line only) |
+| TC-62 | D82 | tests/unit/edge-cases.test.ts | [D82] date with a time component is `unparseable date` | unit | `Date: 2026-09-09 10:30` | skip reason `unparseable date` |
+| TC-63 | D83 | tests/unit/edge-cases.test.ts | [D83] a skipped note returns no Note body and no items | unit | `2026-10-03-sales-pipeline.md` | readNote ok:false; result has no `body` or items field |
+| TC-64 | D85 | tests/unit/ingest-parsing.test.ts | [D85] blank attendee entries from `a,,b` and trailing commas are dropped | unit | `Attendees: Anita Rao,, Rahul Mehta,` and `Attendees: <x@y.z>` | attendees = Anita Rao, Rahul Mehta; email-only entry dropped |
+| TC-65 | D86 | tests/unit/edge-cases.test.ts | [D86] impossible leading date in filename is `missing date` | unit | `2026-13-01-x.md`, no Date line | skip reason `missing date` |
+| TC-66 | D87 | tests/unit/ingest-parsing.test.ts | [D87] month names are case-insensitive; ordinals and abbreviations are unparseable | unit | `9 SEPTEMBER 2026` (ok); `9th September 2026` and `9 Sep 2026` (skip) | first gives 2026-09-09; the other two give `unparseable date` |
+| TC-67 | D88 | tests/unit/ingest-parsing.test.ts | [D88] when YAML and labelled headers both exist, YAML wins | unit | YAML `date: 2026-09-09` plus body lead `Date: 2026-09-10` (no `##` in between) | meetingDate = `2026-09-09` |
+| TC-68 | D89 | tests/unit/edge-cases.test.ts | [D89] unclosed YAML front matter is not a YAML block | unit | `---` line, `date: 2026-09-09`, no closing `---`, then `Date: 2026-09-10` | labelled line is read: meetingDate = `2026-09-10` |
+| TC-69 | D90 | tests/unit/edge-cases.test.ts | [D90] lone CR is content, no crash, no split | unit | temp file: `Date: 2026-09-09\r- [ ] task` (CR only) | ok; no throw; 0 items (one line, not a checkbox at line start) |
+| TC-70 | D91 | tests/unit/ingest-parsing.test.ts | [D91] `-[ ]` is not an item; `- [ ]text` is an item with text `text` | unit | `-[ ] no space`, `- [ ]text` | 1 item, text `text`; first line not an item |
+| TC-71 | D92 | tests/unit/ingest-parsing.test.ts | [D92] with two `Date:` lines in the lead, the first wins | unit | `Date: 2026-09-09` then `Date: 2026-09-10` | meetingDate = `2026-09-09` |
+| TC-72 | D93 | tests/unit/edge-cases.test.ts | [D93] BOM-only file is `empty file` | unit | temp file: bytes `EF BB BF` | skip reason `empty file` |
+| TC-73 | D94 | tests/unit/ingest-parsing.test.ts | [D94] missing folder throws a typed ActiontrackError | unit | path that does not exist | throws `ActiontrackError` subclass (not a plain Error); spec 06 maps to exit 2 |
 
 Negative cases (malformed input never throws): TC-17, TC-19, TC-20, TC-21, TC-22, TC-23, TC-26, TC-27, TC-29, TC-45, TC-59, TC-69.
 

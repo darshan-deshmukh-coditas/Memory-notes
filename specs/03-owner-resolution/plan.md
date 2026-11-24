@@ -58,10 +58,10 @@ Decide who each checkbox item belongs to: a full name, or one of four owner labe
 - **Two-stage pure pipeline.** `parseOwnerPhrase(text)` splits a line into owner phrase, task and an owner shape (`placeholder`, `group`, `at-form`, `name`, `joint`, `none`). `resolveOwner(phrase, attendees, roster)` maps each phrase part to an `OwnerResolution`. Both are pure. The existing stub signature `resolveOwner(itemText, attendees, roster)` can stay as a wrapper.
 - **Precedence, in order.** (1) Placeholder words (`Someone`, `TBD`, `Owner`, `Everyone`, `Team`) by exact phrase. (2) `@name:` form. (3) First ` to ` split. (4) `&` split into parts. (5) Strip a trailing `(with ...)` from each part. (6) Resolve each part: full name (attendees, then roster), `First N.` initial, bare first name (attendees, then roster). Any miss gives `(unresolved)`.
 - **Attendees before roster.** The roster is consulted only when no attendee has the first name (D41). A first name that matches two or more attendees is `(ambiguous)` and never checks the roster.
-- **Comparison.** Names compare case-insensitively (spec rule 12). Output uses the spelling from attendees or roster, not the typed form (Q5).
-- **Result shape.** `OwnerResolution` keeps `person` (with `viaRoster`), `none`, `group`, `ambiguous` (first name), `unresolved` (raw text). The `&` case returns one result per part, so the caller creates one item per result (Q2).
+- **Comparison.** Names compare case-insensitively (spec rule 12). Output uses the spelling from attendees or roster, not the typed form (D122).
+- **Result shape.** `OwnerResolution` keeps `person` (with `viaRoster`), `none`, `group`, `ambiguous` (first name), `unresolved` (raw text). The `&` case returns one result per part, so the caller creates one item per result (D117).
 - **Errors.** No input throws. Unexpected states fall to `(unresolved)` with the raw text. Only `resolveOwnerArg` throws, for an ambiguous first name, as a usage error (exit 2 via the CLI).
-- **Naming.** The spec names are `parseOwnerPhrase`, `resolveOwner`, `buildRoster` and `resolveOwnerArg`. The stub names `matchOwnerArg` and the missing `parseOwnerPhrase` and `buildRoster` do not match (Q1).
+- **Naming.** The spec names are `parseOwnerPhrase`, `resolveOwner`, `buildRoster` and `resolveOwnerArg`. The stub names `matchOwnerArg` and the missing `parseOwnerPhrase` and `buildRoster` do not match (D116).
 
 ## Error and flag handling
 - `(unresolved)`, `(ambiguous)` and `viaRoster` results are returned as data. Spec 06 turns them into the ingest summary and warnings (D16.4, D41.1).
@@ -71,38 +71,38 @@ Decide who each checkbox item belongs to: a full name, or one of four owner labe
 ## Dependencies on other specs
 - **Consumes from spec 01:** the raw item text (checkbox removed) and the note's attendees as `Attendee[]` (`domain/types.ts`).
 - **Consumes from spec 05:** the store names that feed `buildRoster` (D61.2). The store persists the roster.
-- **Produces for spec 04:** owner label or full name, plus the normalised first name for `(ambiguous)` (D40.2, D68.1 need the raw unresolved text, see Q3).
+- **Produces for spec 04:** owner label or full name, plus the normalised first name for `(ambiguous)` (D40.2, D68.1 need the raw unresolved text, see D120).
 - **Produces for spec 06:** `viaRoster` flags and the list of `(unresolved)`/`(ambiguous)` items for the summary.
 - **Produces for spec 07 and 09:** `resolveOwnerArg` for `list --owner` and `followup <owner>`; label values for `--owner` tokens and the `followup --all` skip (D16.3, D42.3).
 
 ## Risks
 - **Spec and stub drift.** The stub names and `firstName` field do not match the spec. Fix before writing red tests, or the tests will target the wrong names.
 - **Sample coverage.** NFR-A6 to A8 depend on spec 01 and spec 06 (roster built from all read notes). Their acceptance tests stay red until those specs land.
-- **Phrase forms.** Real-world line shapes follow the Q8 to Q10 decisions. Check the acceptance run output for the sample folder against them.
+- **Phrase forms.** Real-world line shapes follow the D127 to D129 decisions. Check the acceptance run output for the sample folder against them.
 - **Name collisions with labels.** A person named `None` or `Team` cannot be selected (D42.2). Accepted as a known limitation.
 
 ## Decisions
-Each decision is settled. Task references in `task.md` point here as "per decision Qn".
+Each decision is settled. Task references in `task.md` point here by decision ID (D116 to D135 for this spec).
 
-- **Q1.** Spec names are authoritative: `resolveOwner`, `parseOwnerPhrase`, `buildRoster`, `resolveOwnerArg`. The stub `matchOwnerArg` is renamed and the missing stubs are added (task T01).
-- **Q2.** One owner text naming two people (`Anita & Rahul`) returns a list with one result per person (D24.3). `resolveOwner` returns an array.
-- **Q2b.** `Anita & Anita` gives one result.
-- **Q2c.** `Everyone & Rahul` gives a group result plus Rahul's result.
-- **Q3.** `(unresolved)` carries `text`, the raw owner text, not `firstName` (D68.1).
-- **Q4.** Placeholder words match case-insensitively, with a trailing `.`, `,` or `:` stripped (D66.1 precedent).
-- **Q5.** Output uses the spelling from attendees or the roster, not the typed form.
-- **Q6.** Names match exactly after case folding. No accent folding (`Jose` does not match `José`). Hyphen and apostrophe are name characters.
-- **Q7a.** Two attendees with the same first name and surname initial give `(ambiguous)`.
-- **Q7b.** If no attendee has the first name, the roster is used for the `First N.` form (rule 10).
-- **Q7c.** The dot is optional: `Priya N` and `Priya N.` both match the attendee whose surname starts with N. Several matches give `(ambiguous)`.
-- **Q8.** `' to '` splits owner from task only when the word before it is a known owner or roster name; otherwise the whole text is the task. `@name:` is tested first, so `@anita: talk to Priya` has owner Anita. `@anita talk` with no colon is an unresolved owner phrase `@anita talk`.
-- **Q9.** Only a known owner word before `' to '` counts as an owner. Any other text before it stays in the task, so `Schedule to review budget` gives `(no owner)` with the full text. An empty word before `' to '` (`to do x`) also gives `(no owner)` with the full text.
-- **Q10.** A trailing `(with X)` is stripped from each `&` part; the collaborator stays in the task text (D24.4).
-- **Q11.** A full name with a wrong surname (`Priya Sharma` when only `Priya Shah` is an attendee) gives `(unresolved)`. There is no fallback to the first name.
-- **Q12.** Roster names compare case-insensitively; the first spelling seen wins (store names first, then notes in read order). Email handling stays in spec 05.
-- **Q13.** `resolveOwnerArg` returns a discriminated result: `person`, `label` or `no-match`. An ambiguous first name throws a usage error. `knownOwners` is roster names plus store names. `followup <unknown>` follows the same `no-match` result (spec 09).
-- **Q14.** A person literally named `none` gives a warning and keeps the `(no owner)` label (D42.2). The warning is returned as data for spec 06 to print.
-- **Q15.** A full name matched on the roster sets `viaRoster: true`, so the ingest summary notes it as for D41.1.
-- **Q16.** `@Anita:` matches Anita; the `@` form compares case-insensitively.
+- **D116.** Spec names are authoritative: `resolveOwner`, `parseOwnerPhrase`, `buildRoster`, `resolveOwnerArg`. The stub `matchOwnerArg` is renamed and the missing stubs are added (task T01).
+- **D117.** One owner text naming two people (`Anita & Rahul`) returns a list with one result per person (D24.3). `resolveOwner` returns an array.
+- **D118.** `Anita & Anita` gives one result.
+- **D119.** `Everyone & Rahul` gives a group result plus Rahul's result.
+- **D120.** `(unresolved)` carries `text`, the raw owner text, not `firstName` (D68.1).
+- **D121.** Placeholder words match case-insensitively, with a trailing `.`, `,` or `:` stripped (D66.1 precedent).
+- **D122.** Output uses the spelling from attendees or the roster, not the typed form.
+- **D123.** Names match exactly after case folding. No accent folding (`Jose` does not match `José`). Hyphen and apostrophe are name characters.
+- **D124.** Two attendees with the same first name and surname initial give `(ambiguous)`.
+- **D125.** If no attendee has the first name, the roster is used for the `First N.` form (rule 10).
+- **D126.** The dot is optional: `Priya N` and `Priya N.` both match the attendee whose surname starts with N. Several matches give `(ambiguous)`.
+- **D127.** `' to '` splits owner from task only when the word before it is a known owner or roster name; otherwise the whole text is the task. `@name:` is tested first, so `@anita: talk to Priya` has owner Anita. `@anita talk` with no colon is an unresolved owner phrase `@anita talk`.
+- **D128.** Only a known owner word before `' to '` counts as an owner. Any other text before it stays in the task, so `Schedule to review budget` gives `(no owner)` with the full text. An empty word before `' to '` (`to do x`) also gives `(no owner)` with the full text.
+- **D129.** A trailing `(with X)` is stripped from each `&` part; the collaborator stays in the task text (D24.4).
+- **D130.** A full name with a wrong surname (`Priya Sharma` when only `Priya Shah` is an attendee) gives `(unresolved)`. There is no fallback to the first name.
+- **D131.** Roster names compare case-insensitively; the first spelling seen wins (store names first, then notes in read order). Email handling stays in spec 05.
+- **D132.** `resolveOwnerArg` returns a discriminated result: `person`, `label` or `no-match`. An ambiguous first name throws a usage error. `knownOwners` is roster names plus store names. `followup <unknown>` follows the same `no-match` result (spec 09).
+- **D133.** A person literally named `none` gives a warning and keeps the `(no owner)` label (D42.2). The warning is returned as data for spec 06 to print.
+- **D134.** A full name matched on the roster sets `viaRoster: true`, so the ingest summary notes it as for D41.1.
+- **D135.** `@Anita:` matches Anita; the `@` form compares case-insensitively.
 
 **Settled earlier (do not re-ask):** owners file location and format (D56); roster source (D61); roster fallback when the note has attendees but not the first name (D41); full name not attendee (D60.1); joint owner split (D60.2); owner phrase boundary (D67). Spec 03 items for D23 and D11.3 are closed by D41, D61 and D60.

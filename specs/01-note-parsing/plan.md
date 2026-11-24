@@ -43,37 +43,37 @@ Turn each top-level `.md` note into a `Note` (meeting date, attendees, body) or 
 | FR-I8, FR-I9, FR-E4, D5.1, D22.1, D22.3 | Whole-note skip in order: empty, UTF-8, date missing, date unparseable | `note.ts` `readNote` | TC-19, TC-20, TC-22, TC-23 |
 | D64.1 | Whitespace-only file is `empty file` | `note.ts` | TC-21 |
 | D55.1, D55.2, D55.3 | BOM stripped, CRLF equals LF, invalid UTF-8 skipped | `note.ts` | TC-22, TC-24, TC-25 |
-| D65.1 (as amended by Q-02) | Exactly six skip reason strings | `note.ts` | TC-28 |
+| D65.1 (as amended by D78) | Exactly six skip reason strings | `note.ts` | TC-28 |
 | NFR-R1 | Reading never throws | `note.ts` | TC-26, TC-27 |
 | NFR-R2 | Every skip is reported with file and reason | `note.ts` | TC-27 |
 | NFR-R5 | Long lines and odd input handled | `note.ts`, `items.ts` | TC-29 |
 | NFR-SEC3 | Only reads the folder given | `note.ts` | Review (no test) |
 | NFR-SEC4 | Note text is data, never executed | `header.ts`, `items.ts` | TC-30, TC-49 |
 | NFR-A1 to NFR-A4 | Sample folder: 4 skipped, 31 read, trap lines not ingested, `.txt` ignored | `tests/acceptance/sample-notes.test.ts` | TC-50 to TC-57 |
-| Decisions Q-01 to Q-19 | See Decisions section | various | TC-58 to TC-73 |
-| Decision Q-19 | Scope only, no test here | n/a | none |
+| Decisions D77 to D95 | See Decisions section | various | TC-58 to TC-73 |
+| Decision D95 | Scope only, no test here | n/a | none |
 
 ## Design per module
 
 Pure/IO split: only `listNoteFiles` and `readNote` touch the file system. `parseHeader`, `dateFromFilename`, `extractItems` and the decode step are pure and take strings or names.
 
-- **`listNoteFiles(folder)`** (IO shell). Calls `readdir` with `withFileTypes`. Pure helper `selectNoteNames(entries: {name, isFile})` returns `{notes, ignored}`. A note is a regular file whose name ends in `.md` (case rule: Q-03). Sort with a plain code-unit comparison, not `localeCompare`, so order is the same on all OS (NFR-D3).
+- **`listNoteFiles(folder)`** (IO shell). Calls `readdir` with `withFileTypes`. Pure helper `selectNoteNames(entries: {name, isFile})` returns `{notes, ignored}`. A note is a regular file whose name ends in `.md` (case rule: D79). Sort with a plain code-unit comparison, not `localeCompare`, so order is the same on all OS (NFR-D3).
 - **`readNote(file)`** (IO shell around pure core). `fs.readFile` returns a Buffer inside try/catch that maps every error to a skip. Pure `decodeNote(buffer)`: decode with `TextDecoder("utf-8", {fatal: true})`, strip a leading BOM, then check empty (no non-whitespace), in that order (D5.1 list, D22.3). Then `parseHeader(text)`. If `date` is null and no unparseable value, call `dateFromFilename(path.basename(file))`. Body is the text after `bodyStart`.
 - **`parseHeader(text)`** (pure). Normalises CRLF to LF for parsing only. Lead = lines before the first line that starts with `## `. YAML is used when the first line is `---` and a closing `---` exists; otherwise labelled lines in the lead. Keys matched case-insensitively. Date value matched against the three D21.2 forms, then checked as a real calendar date. Attendees split on commas only.
 - **`dateFromFilename(file)`** (pure). Matches `^(\d{4}-\d{2}-\d{2})` at the start of the basename and checks it is a real date.
 - **`extractItems(body, firstLine)`** (pure). Line scanner with two states: inside fence (opening marker char and length, closed by the same char with at least that length) and inside HTML comment. Per line, in order: fence/comment state, block quote (first non-space `>`), table row (first non-space `|`), `ACTION:` prefix, numbered checkbox (`^\s*\d+[.)]\s+\[`), checkbox (`^\s*[-*+]\s+\[( |x|X)\]`). Only checkbox lines become items. Line number = `firstLine + index`.
 
-**Type change.** `Note` gets the absolute first line of `body` (Q-08) in `src/domain/types.ts`.
+**Type change.** `Note` gets the absolute first line of `body` (D84) in `src/domain/types.ts`.
 
 **Ignored counts.** `ExtractResult.ignored` is `SkipReport[]`. Its `reason` carries the ignored kind label (for example `block quote`, `code fence`, `HTML comment`, `table row`, `ACTION line`, `numbered checkbox`). These labels are summary wording (D65.3) and must not reuse the skip reason strings.
 
 ## Error and skip handling
 
-- Skip reason strings, exactly six (D65.1 as amended by Q-02). Whole-note skips: `empty file`, `not valid UTF-8`, `missing date`, `unparseable date`, `unreadable file`. Line-level skip (reported as `file:line`): `empty action item`.
+- Skip reason strings, exactly six (D65.1 as amended by D78). Whole-note skips: `empty file`, `not valid UTF-8`, `missing date`, `unparseable date`, `unreadable file`. Line-level skip (reported as `file:line`): `empty action item`.
 - Note-level skip result: `{file, reason}`. Line-level skip: `{file, line, reason}`, `line` is 1-based absolute.
-- `readNote` never throws. Any unexpected error becomes a skip with reason `unreadable file` (Q-02).
-- Skipped notes contribute no `Note` and are not passed to `extractItems`; they add nothing to item or ignored counts (Q-07).
-- `listNoteFiles` errors on a missing folder are not a note skip. It throws a typed `ActiontrackError` that spec 06 maps to exit 2 (Q-18).
+- `readNote` never throws. Any unexpected error becomes a skip with reason `unreadable file` (D78).
+- Skipped notes contribute no `Note` and are not passed to `extractItems`; they add nothing to item or ignored counts (D83).
+- `listNoteFiles` errors on a missing folder are not a note skip. It throws a typed `ActiontrackError` that spec 06 maps to exit 2 (D94).
 - Warnings go to stderr only, printed by the caller (spec 06), never by these modules.
 
 ## Dependencies on other specs
@@ -89,36 +89,36 @@ Pure/IO split: only `listNoteFiles` and `readNote` touch the file system. `parse
 
 - A hand-written Markdown scanner can drift from real Markdown. Keep the rules to the listed ones and test each trap in its own case.
 - Labelled `Date:` text inside the body could be read as a header. D63.1 limits reading to the lead; test it (TC-15).
-- File-system error codes differ between Windows and POSIX (for example EPERM vs EACCES). Map all errors to one path (Q-02).
+- File-system error codes differ between Windows and POSIX (for example EPERM vs EACCES). Map all errors to one path (D78).
 - Trap counts for the sample folder (NFR-A4) are not recorded in the spec. TC-54 needs recorded values after the first run.
 - `TRACEABILITY.md` row BR-01 lists D2, D12, D21, D26, D27, D29, D50, D55, D57, D63 to D65 but not D5, D11, D22, D37. Fix in task T46.
-- Stub `it.todo("no .md files: No notes found, exit 2 (D35.3)")` belongs to spec 06, not this spec. Move it (Q-19).
+- Stub `it.todo("no .md files: No notes found, exit 2 (D35.3)")` belongs to spec 06, not this spec. Move it (D95).
 - Stub name `bad action lines are skipped at line level (D5.2)` is narrower in D50.1 (only empty checkbox lines). D50 is later and wins; rename the stub in task T09.
 - A change to `Note` affects specs 04 and 05 signatures. Record the decision before changing the type.
 
 ## Decisions
 
-Settled. Each line is final; the matching test is named with its Q-nn ID. A later decision wins, and new decisions are recorded in `docs/FRD.md` section 11 from D77.
+Settled. Each line is final; the matching test is named with its D-nn ID. A later decision wins, and new decisions are recorded in `docs/FRD.md` section 11 from D77.
 
-- **Q-01** A blank `Date:` value counts as no date; the filename fallback applies, else `missing date`.
-- **Q-02** An unreadable file (permission error, path is a directory) is skipped with reason `unreadable file`. This amends D65.1: the skip reason strings are now six.
-- **Q-03** `.md` is matched case-insensitively (so `.MD` is a note); dotfiles ending `.md` are notes; a directory named `y.md` is not a note and is counted as ignored.
-- **Q-04** Ignored-line counts inside fences, quotes and comments count only checkbox-looking lines.
-- **Q-05** Both `` ``` `` and `~~~` fences are accepted; an unclosed fence runs to end of file (later checkbox lines are ignored, no skip).
-- **Q-06** A date with a time part (for example `2026-09-09 10:30`) is `unparseable date`.
-- **Q-07** A skipped note adds nothing to item or ignored counts; only its skip entry is reported.
-- **Q-08** Line numbers are absolute 1-based file lines, counting header lines after BOM strip; a CRLF line counts once. This requires the `Note` type change above.
-- **Q-09** Empty attendee entries (`a,,b`, trailing comma) are dropped silently; an email-only entry (`<x@y.z>`) is dropped.
-- **Q-10** An impossible date in the filename (for example `2026-13-01-x.md`) with no date key is `missing date`.
-- **Q-11** Month names are case-insensitive and full English names only (`9 SEPTEMBER 2026` is accepted); `9th September 2026` and `9 Sep 2026` are `unparseable date`.
-- **Q-12** When a note has both YAML front matter and labelled lines, YAML wins; labelled lines are not read.
-- **Q-13** Unclosed YAML front matter (`---` with no closing `---`) is no YAML block; labelled lines are read from the lead.
-- **Q-14** A lone CR is ordinary content; the file is one line; no crash (matches D55.2).
-- **Q-15** `-[ ]` (no space after the bullet) is not an item; `- [ ]text` is an item with text `text`. Tabs count as indentation.
-- **Q-16** The first `Date:` line in the lead wins; later ones are ignored.
-- **Q-17** A BOM-only file is `empty file`, since the BOM is stripped before the empty check.
-- **Q-18** A missing or unreadable folder makes `listNoteFiles` throw `ActiontrackError`; spec 06 maps it to exit 2 (FR-D20.3).
-- **Q-19** The D35.3 stub (`No notes found`, exit 2) moves to spec 06 tests; scope only, no test in this spec.
+- **D77** A blank `Date:` value counts as no date; the filename fallback applies, else `missing date`.
+- **D78** An unreadable file (permission error, path is a directory) is skipped with reason `unreadable file`. This amends D65.1: the skip reason strings are now six.
+- **D79** `.md` is matched case-insensitively (so `.MD` is a note); dotfiles ending `.md` are notes; a directory named `y.md` is not a note and is counted as ignored.
+- **D80** Ignored-line counts inside fences, quotes and comments count only checkbox-looking lines.
+- **D81** Both `` ``` `` and `~~~` fences are accepted; an unclosed fence runs to end of file (later checkbox lines are ignored, no skip).
+- **D82** A date with a time part (for example `2026-09-09 10:30`) is `unparseable date`.
+- **D83** A skipped note adds nothing to item or ignored counts; only its skip entry is reported.
+- **D84** Line numbers are absolute 1-based file lines, counting header lines after BOM strip; a CRLF line counts once. This requires the `Note` type change above.
+- **D85** Empty attendee entries (`a,,b`, trailing comma) are dropped silently; an email-only entry (`<x@y.z>`) is dropped.
+- **D86** An impossible date in the filename (for example `2026-13-01-x.md`) with no date key is `missing date`.
+- **D87** Month names are case-insensitive and full English names only (`9 SEPTEMBER 2026` is accepted); `9th September 2026` and `9 Sep 2026` are `unparseable date`.
+- **D88** When a note has both YAML front matter and labelled lines, YAML wins; labelled lines are not read.
+- **D89** Unclosed YAML front matter (`---` with no closing `---`) is no YAML block; labelled lines are read from the lead.
+- **D90** A lone CR is ordinary content; the file is one line; no crash (matches D55.2).
+- **D91** `-[ ]` (no space after the bullet) is not an item; `- [ ]text` is an item with text `text`. Tabs count as indentation.
+- **D92** The first `Date:` line in the lead wins; later ones are ignored.
+- **D93** A BOM-only file is `empty file`, since the BOM is stripped before the empty check.
+- **D94** A missing or unreadable folder makes `listNoteFiles` throw `ActiontrackError`; spec 06 maps it to exit 2 (FR-D20.3).
+- **D95** The D35.3 stub (`No notes found`, exit 2) moves to spec 06 tests; scope only, no test in this spec.
 
 Standing assumptions (not questions):
 - `## ` boundary means a line that starts with exactly `## ` (no leading space). `### ` does not end the lead.

@@ -10,7 +10,7 @@ Types: **unit** (pure or with fake connector, fake clock, in-memory store), **sa
 
 Exit codes follow `specs/11-cli-conventions`: 0, 1, 2, 3, 4.
 
-Cases marked with a Q-number, such as **(Q1)**, test a settled decision from `plan.md` "Decisions".
+Cases marked with a decision ID, such as **(D221)**, test a settled decision from `plan.md` "Decisions".
 
 ## Commands and template
 
@@ -47,32 +47,32 @@ Cases marked with a Q-number, such as **(Q1)**, test a settled decision from `pl
 | TC-29 | NFR-S2, D45.1 | safety.test.ts | `[TC-29] NFR-S2 MCP allow-list contains only create_draft` (existing) | safety | Constant | `["create_draft"]` | - |
 | TC-30 | NFR-S1, AC-F3, RULE-1 | safety.test.ts | `[TC-30] NFR-S1 no source file references a send operation` (existing) | safety | All `src/**/*.ts` | No offenders | - |
 | TC-31 | FR-F5, NFR-S1 | commands.test.ts | `[TC-31] FR-F5 a failed createDraft is not retried` | unit | Fake throws once for Priya | Exactly one `createDraft` call for Priya | 3 |
-| TC-32 | D76.1 | commands.test.ts (stub) and integration (spec 10) | `[TC-32] D76.1 create_draft over 60 seconds is a connector failure with no record` | integration | Stub MCP server that delays past 60 s (fake timers in unit form) | Exit 3; no record; message suggests checking Gmail Drafts (Q17) | 3 |
+| TC-32 | D76.1 | commands.test.ts (stub) and integration (spec 10) | `[TC-32] D76.1 create_draft over 60 seconds is a connector failure with no record` | integration | Stub MCP server that delays past 60 s (fake timers in unit form) | Exit 3; no record; message suggests checking Gmail Drafts (D237) | 3 |
 | TC-33 | D75.1 | commands.test.ts (stub) and integration (spec 10) | `[TC-33] D75.1 unparseable draft id is a connector failure with no record` | integration | Stub returns text block that is not `{"draftId": ...}` | Exit 3; no record | 3 |
 | TC-34 | D56.3 | commands.test.ts | `[TC-34] D56.3 malformed owners.json is a warning; drafts are created without recipients` | unit | Owners file is invalid JSON; `followup Priya` | Warning on stderr naming the file; draft without `to`; no crash | 1 |
 | TC-35 | D59.4, D53.1 | commands.test.ts | `[TC-35] D59.4 corrupt store is exit 2, never overwritten, no draft created` | unit | Store file is invalid JSON | Exit 2; store bytes unchanged; no `createDraft` | 2 |
 | TC-36 | D62.1, D62.2 | commands.test.ts | `[TC-36] D62.1 unexpected internal error (non-Gmail) is exit 4, store unchanged` | unit | Fake connector throws a plain `Error` | Exit 4; clear stderr message; store bytes unchanged | 4 |
 | TC-37 | D7.3 | commands.test.ts | `[TC-37] D7.3 --all where no owner has open or overdue items: no draft, message, exit 0` | unit | Store with only done items and label items | Zero `createDraft`; message; skipped count printed if labels exist | 0 |
-| TC-38 | rule 18, D4.4 (Q1) | commands.test.ts | `[TC-38] followup with a name that matches nobody exits 2 listing known names (Q1)` | unit | `followup "Zed Ortiz"` | Exit 2; stderr lists known names; no `createDraft` | 2 |
-| TC-39 | D20.2, D16.3 (Q8) | commands.test.ts | `[TC-39] --all with only skipped label items keeps exit 0 (Q8)` | unit | Store: Priya has no items; one `(group)` item | Exit 0; skipped count 1 printed | 0 |
-| TC-40 | D51.2, D53.2 (Q7) | commands.test.ts | `[TC-40] --all with one repeat owner warns for that owner, drafts the others, exits 1 (Q7)` | unit | Priya has a prior record; Sam does not | One `createDraft` (Sam); warning for Priya; no record added for Priya | 1 |
-| TC-41 | D51.2 (Q6) | commands.test.ts | `[TC-41] repeat detection matches the resolved owner name exactly (Q6)` | unit | Record for "Priya Nair"; items resolved to "priya nair" | Treated as not a repeat (case-sensitive) | 0 |
-| TC-42 | D39.3, D58.1 (Q13) | commands.test.ts | `[TC-42] latest source tie on meeting date picks the file name sorting last (Q13)` | unit | Two sources, same meeting date, `a.md` and `b.md` | Shown source `b.md` | - |
-| TC-43 | D62 (Q18) | commands.test.ts | `[TC-43] draft created but drafts record cannot be saved: exit 4 with the draft id on stderr (Q18)` | unit | Fake creates `d-7`; store save throws | Exit 4; stderr contains `d-7` and owner; no duplicate draft attempted | 4 |
-| TC-44 | D59.3 (Q3) | commands.test.ts | `[TC-44] missing store: --all and <owner> both exit 2 with a message to run ingest first (Q3)` | unit | No store file | `--all` and `followup Priya`: exit 2; stderr tells the user to run `ingest` first; no `createDraft` | 2 |
+| TC-38 | rule 18, D4.4 (D221) | commands.test.ts | `[TC-38] followup with a name that matches nobody exits 2 listing known names (D221)` | unit | `followup "Zed Ortiz"` | Exit 2; stderr lists known names; no `createDraft` | 2 |
+| TC-39 | D20.2, D16.3 (D228) | commands.test.ts | `[TC-39] --all with only skipped label items keeps exit 0 (D228)` | unit | Store: Priya has no items; one `(group)` item | Exit 0; skipped count 1 printed | 0 |
+| TC-40 | D51.2, D53.2 (D227) | commands.test.ts | `[TC-40] --all with one repeat owner warns for that owner, drafts the others, exits 1 (D227)` | unit | Priya has a prior record; Sam does not | One `createDraft` (Sam); warning for Priya; no record added for Priya | 1 |
+| TC-41 | D51.2 (D226) | commands.test.ts | `[TC-41] repeat detection matches the resolved owner name exactly (D226)` | unit | Record for "Priya Nair"; items resolved to "priya nair" | Treated as not a repeat (case-sensitive) | 0 |
+| TC-42 | D39.3, D58.1 (D233) | commands.test.ts | `[TC-42] latest source tie on meeting date picks the file name sorting last (D233)` | unit | Two sources, same meeting date, `a.md` and `b.md` | Shown source `b.md` | - |
+| TC-43 | D62 (D238) | commands.test.ts | `[TC-43] draft created but drafts record cannot be saved: exit 4 with the draft id on stderr (D238)` | unit | Fake creates `d-7`; store save throws | Exit 4; stderr contains `d-7` and owner; no duplicate draft attempted | 4 |
+| TC-44 | D59.3 (D223) | commands.test.ts | `[TC-44] missing store: --all and <owner> both exit 2 with a message to run ingest first (D223)` | unit | No store file | `--all` and `followup Priya`: exit 2; stderr tells the user to run `ingest` first; no `createDraft` | 2 |
 | TC-45 | FR-F3, D44 | commands.test.ts | `[TC-45] FR-F3 done item past its due date is never listed` | unit | Priya: one done item due 2020-01-01 and one open item | Done item text absent from body; subject N = 1 | 0 |
 | TC-46 | D19.3, rule 9 | commands.test.ts | `[TC-46] rule 9 entries ordered by due date, undated last, ties by id` | unit | Open items: id 4 undated, id 2 due 2026-12-01, id 7 due 2026-12-01 | Order: 2, 7, 4 within Open | - |
-| TC-47 | D19.2 (Q11) | commands.test.ts | `[TC-47] greeting uses the first whitespace token; one-word name is used whole (Q11)` | unit | "Priya Nair Rao" and "Madonna" | Greeting `Priya`; greeting `Madonna` | - |
+| TC-47 | D19.2 (D231) | commands.test.ts | `[TC-47] greeting uses the first whitespace token; one-word name is used whole (D231)` | unit | "Priya Nair Rao" and "Madonna" | Greeting `Priya`; greeting `Madonna` | - |
 | TC-48 | D19.3 | commands.test.ts | `[TC-48] undated entry shows that there is no due date` | unit | Open item with null due | Entry text states no due date (wording free; assert a no-due marker is present) | - |
-| TC-49 | D19.3, D58.2 (Q12) | commands.test.ts | `[TC-49] each entry shows task, due, meeting date and file name only, not a path (Q12)` | unit | Source stored as `notes/2025/a.md` | Body contains `a.md`, not `notes/2025/a.md` | - |
+| TC-49 | D19.3, D58.2 (D232) | commands.test.ts | `[TC-49] each entry shows task, due, meeting date and file name only, not a path (D232)` | unit | Source stored as `notes/2025/a.md` | Body contains `a.md`, not `notes/2025/a.md` | - |
 | TC-50 | NFR-SEC4 | commands.test.ts | `[TC-50] NFR-SEC4 note text containing command-like or markup text is rendered literally` | unit | Task text `rm -rf /; <b>send</b>` | Body contains the text as given; no execution; no extra items | 0 |
 | TC-51 | NFR-M1 | commands.test.ts | `[TC-51] NFR-M1 email/followup-template.ts imports no store or connector implementation` | unit | Static read of the module source | Import list contains no `store/`, `mcp-connector` or `cli/` path | - |
 | TC-52 | NFR-M3 | commands.test.ts | `[TC-52] NFR-M3 followup runs fully with the fake connector and no MCP process` | unit | Fake connector and in-memory store | Command completes; no child process spawned | 0 |
 | TC-53 | NFR-A10, AC-F1 | acceptance/sample-notes.test.ts | `[TC-53] NFR-A10 followup on the sample folder produces drafts only and sends nothing` | acceptance | Sample `notes/` ingested into a temp store; fake connector | Only `createDraft` calls; count equals the sample's expected open and overdue owners (fixture decided in spec 06) | 0 or 1 |
-| TC-54 | D51.1 vs D16.3 (Q15) | commands.test.ts | `[TC-54] --all creating zero drafts still prints a total line of zero (Q15)` | unit | All owners have only label or done items | Total line shows 0 drafts; skipped count printed | 0 |
-| TC-55 | D7.3 (Q21) | commands.test.ts | `[TC-55] --force for an owner with nothing to chase creates no draft (Q21)` | unit | Lee has only done items; `followup Lee --force` | No `createDraft`; message; exit 0 | 0 |
-| TC-56 | D19, D6.3 (Q14) | commands.test.ts | `[TC-56] stderr warnings name the owner and file, not the email address (Q14)` | unit | Email conflict case from TC-15 | Stderr contains "Priya Nair" and file name; does not contain either address | 1 |
-| TC-57 | D56.1, D18.2 (Q10) | commands.test.ts | `[TC-57] owners.json lookup by full name is case-insensitive (Q10)` | unit | Owners file key "Priya Nair"; owner "priya nair" | `to` = file address | 0 |
+| TC-54 | D51.1 vs D16.3 (D235) | commands.test.ts | `[TC-54] --all creating zero drafts still prints a total line of zero (D235)` | unit | All owners have only label or done items | Total line shows 0 drafts; skipped count printed | 0 |
+| TC-55 | D7.3 (D241) | commands.test.ts | `[TC-55] --force for an owner with nothing to chase creates no draft (D241)` | unit | Lee has only done items; `followup Lee --force` | No `createDraft`; message; exit 0 | 0 |
+| TC-56 | D19, D6.3 (D234) | commands.test.ts | `[TC-56] stderr warnings name the owner and file, not the email address (D234)` | unit | Email conflict case from TC-15 | Stderr contains "Priya Nair" and file name; does not contain either address | 1 |
+| TC-57 | D56.1, D18.2 (D230) | commands.test.ts | `[TC-57] owners.json lookup by full name is case-insensitive (D230)` | unit | Owners file key "Priya Nair"; owner "priya nair" | `to` = file address | 0 |
 
 ## Cases in this spec that depend on other specs
 
@@ -101,5 +101,5 @@ Put new fixtures under `tests/fixtures/followup/`. Keep them synthetic (CLAUDE.m
 
 - Acceptance bullets in `spec.md`: AC-F2 (TC-01), D19.1 to D19.4 (TC-02 to TC-05), D39.3 (TC-06), AC-F1, AC-F3, NFR-A10 (TC-28, TC-53), D7.1 to D7.3 (TC-07 to TC-09), D16.3, D25.3, D42.3 (TC-10), D4.4 (TC-11), D6.1 to D6.3, D56.2 (TC-12 to TC-15), D51.2, D51.3 (TC-16, TC-17), D20.5, NFR-R4 (TC-18), D53.2 (TC-19), D35.1, D35.2 (TC-20, TC-21), D73.1 (TC-22, TC-23), D73.2 (TC-24), D74.1 (TC-25), D74.2 (TC-26).
 - Spec rules without a bullet: rule 13 (TC-27), rule 16 (TC-31), rule 17 (TC-20), rule 18 exit codes (TC-35, TC-36), rule 15 (TC-19).
-- Decision-backed cases: Q1 (TC-38), Q3 (TC-44), Q6 (TC-41), Q7 (TC-40), Q8 (TC-39), Q10 (TC-57), Q11 (TC-47), Q12 (TC-49), Q13 (TC-42), Q14 (TC-56), Q15 (TC-54), Q17 (TC-32), Q18 (TC-43), Q21 (TC-55).
+- Decision-backed cases: D221 (TC-38), D223 (TC-44), D226 (TC-41), D227 (TC-40), D228 (TC-39), D230 (TC-57), D231 (TC-47), D232 (TC-49), D233 (TC-42), D234 (TC-56), D235 (TC-54), D237 (TC-32), D238 (TC-43), D241 (TC-55).
 - Negative cases: TC-09, TC-14 (no `to`), TC-18, TC-22, TC-23, TC-24, TC-26, TC-31, TC-45, TC-28, TC-29, TC-30, TC-37, TC-41.

@@ -72,7 +72,7 @@ Out of scope (owner in brackets):
 3. **Imperative shell.** `followup()` in `cli/commands/followup.ts`:
    a. validate arguments (rule 3, D73.1, D73.2);
    b. load the store (spec 05) and resolve `<owner>` (spec 03); for `--all`, group open and overdue items by owner and count label items to skip (D16.3);
-   c. check `ACTIONTRACK_GMAIL_MCP_CMD` before any draft is created or any owner is processed (D74.2, decision Q5);
+   c. check `ACTIONTRACK_GMAIL_MCP_CMD` before any draft is created or any owner is processed (D74.2, decision D225);
    d. for each owner in order: repeat check (D51.2) unless `--force`; resolve recipient (D6, D18, D56); render; call `createDraft` once; on success write one `drafts` record (D51.1) and print the output line; on failure record the failure and continue for `--all` (D53.2);
    e. print the total line for `--all` and the skipped count; return the highest exit code (D53.1).
 4. **Dependencies are arguments.** `followup(opts, deps)` receives the store, the clock, the connector and the owners loader through `Deps`. Tests pass a fake connector and a fixed clock (NFR-M2, NFR-M3). `cli/index.ts` is the only place that builds `McpDraftConnector`.
@@ -94,39 +94,39 @@ Out of scope (owner in brackets):
 |---|---|---|
 | A second MCP tool (for example a send tool) is added to the connector | Email is sent | `ALLOWED_MCP_TOOLS` stays `["create_draft"]`; `safety.test.ts` fails on any `send` reference; TC-28 type-level check |
 | Repeat `followup` run after a successful draft | Duplicate drafts in Gmail | `drafts` record checked before each owner (D51.2); `--force` is the only override (D51.3) |
-| Timeout (D76) or unparseable id (D75.1) after Gmail already created the draft | No record, so a later run cannot see the draft; user may create a second one | Exit 3, message tells the user to check Gmail Drafts before re-running (decision Q17) |
-| Crash after draft created but before record saved (disk full, D62) | Draft exists, no record | Exit 4 with the draft id printed on stderr (decision Q18) |
-| Owner email or hostile note text leaks into logs | Personal data in stderr | Recipient printed only on stdout (D35.1). Warnings name the owner, not the address, where possible (decision Q14). Note text is rendered as data (NFR-SEC4, TC-50) |
+| Timeout (D76) or unparseable id (D75.1) after Gmail already created the draft | No record, so a later run cannot see the draft; user may create a second one | Exit 3, message tells the user to check Gmail Drafts before re-running (decision D237) |
+| Crash after draft created but before record saved (disk full, D62) | Draft exists, no record | Exit 4 with the draft id printed on stderr (decision D238) |
+| Owner email or hostile note text leaks into logs | Personal data in stderr | Recipient printed only on stdout (D35.1). Warnings name the owner, not the address, where possible (decision D234). Note text is rendered as data (NFR-SEC4, TC-50) |
 | Template imports store or connector | Pure core becomes untestable and may gain I/O | Static check in TC-51 |
 | Wrong recipient when two people share an email or notes disagree | Draft goes to the wrong person | Most recent meeting wins with warning (D56.2); TC-15 |
 
 ## Decisions
 
-Each decision below is settled and governs this plan. Record them as D77 or later in `docs/FRD.md` (task T02).
+Each decision below is settled and governs this plan. Record them in `docs/FRD.md` under their IDs (D221 to D243 for this spec) (task T02).
 
-- **Q1** `followup <owner>` with a name that is not an attendee or on the roster: exit 2, list the known owners, create no draft.
-- **Q2** Known owner with no open or overdue items via `followup <owner>`: message, no draft, exit 0 (D7.3).
-- **Q3** Store file missing: exit 2, message tells the user to run `ingest` first; no draft.
-- **Q4** Corrupt store: exit 2, store never overwritten, `createDraft` never called (D59.4).
-- **Q5** `ACTIONTRACK_GMAIL_MCP_CMD` is checked before any draft is created or any owner is processed; unset gives exit 3 naming the variable (D74.2).
-- **Q6** Repeat-detection key is the resolved owner name, exact string match.
-- **Q7** Under `--all`, a repeat owner gets a warning and no draft; other owners proceed; exit 1 (D51.2, D53.2).
-- **Q8** Skipped label items under `--all` do not change the exit code; the count is printed (D16.3).
-- **Q9** Attendee email comes from the most recent note that lists the owner. If that note has no email for them, the owners file is tried (Q10); if neither gives one, the draft has no `to` field and a warning is printed (D6.3).
-- **Q10** Owners-file lookup uses the full name, case-insensitive; an attendee email always wins (D18.2).
-- **Q11** Greeting uses the first whitespace-separated token of the owner's name; a one-word name is used whole.
-- **Q12** Source is shown as the file name only, never the path (D58.2, NFR-SEC2).
-- **Q13** Two sources with the same latest meeting date: the file name that sorts last, ascending, is shown.
-- **Q14** Warnings name the owner and file, never an email address; addresses appear only on stdout and in the draft (D35.1).
-- **Q15** `--all` with zero drafts still prints the total line ("0 drafts") and the skipped count; exit 0 unless another warning applies.
-- **Q16** `drafts` timestamps are ISO 8601 strings from the injected clock; record shape is owned by spec 05.
-- **Q17** Timeout or unparseable draft id: stderr says "A draft may have been created; check Gmail Drafts before running again."; exit 3; no record.
-- **Q18** Draft created but the `drafts` record cannot be written: exit 4, owner and draft id printed on stderr; store otherwise unchanged.
-- **Q19** Subject uses the literal `(N)` form for every N (D19.1); settled by spec.
-- **Q20** Greeting always has a resolved owner name, since only resolved people get drafts; settled by spec.
-- **Q21** `--force` for an owner with nothing to chase: no draft, message, exit 0.
-- **Q22** The env var check lives in `followup` and reads a value passed through `Deps`; the real env read stays in `cli/index.ts`.
-- **Q23** Items with an unknown first name in the note (D41) get a recipient from the owners file by full name only, as in Q10.
+- **D221** `followup <owner>` with a name that is not an attendee or on the roster: exit 2, list the known owners, create no draft.
+- **D222** Known owner with no open or overdue items via `followup <owner>`: message, no draft, exit 0 (D7.3).
+- **D223** Store file missing: exit 2, message tells the user to run `ingest` first; no draft.
+- **D224** Corrupt store: exit 2, store never overwritten, `createDraft` never called (D59.4).
+- **D225** `ACTIONTRACK_GMAIL_MCP_CMD` is checked before any draft is created or any owner is processed; unset gives exit 3 naming the variable (D74.2).
+- **D226** Repeat-detection key is the resolved owner name, exact string match.
+- **D227** Under `--all`, a repeat owner gets a warning and no draft; other owners proceed; exit 1 (D51.2, D53.2).
+- **D228** Skipped label items under `--all` do not change the exit code; the count is printed (D16.3).
+- **D229** Attendee email comes from the most recent note that lists the owner. If that note has no email for them, the owners file is tried (D230); if neither gives one, the draft has no `to` field and a warning is printed (D6.3).
+- **D230** Owners-file lookup uses the full name, case-insensitive; an attendee email always wins (D18.2).
+- **D231** Greeting uses the first whitespace-separated token of the owner's name; a one-word name is used whole.
+- **D232** Source is shown as the file name only, never the path (D58.2, NFR-SEC2).
+- **D233** Two sources with the same latest meeting date: the file name that sorts last, ascending, is shown.
+- **D234** Warnings name the owner and file, never an email address; addresses appear only on stdout and in the draft (D35.1).
+- **D235** `--all` with zero drafts still prints the total line ("0 drafts") and the skipped count; exit 0 unless another warning applies.
+- **D236** `drafts` timestamps are ISO 8601 strings from the injected clock; record shape is owned by spec 05.
+- **D237** Timeout or unparseable draft id: stderr says "A draft may have been created; check Gmail Drafts before running again."; exit 3; no record.
+- **D238** Draft created but the `drafts` record cannot be written: exit 4, owner and draft id printed on stderr; store otherwise unchanged.
+- **D239** Subject uses the literal `(N)` form for every N (D19.1); settled by spec.
+- **D240** Greeting always has a resolved owner name, since only resolved people get drafts; settled by spec.
+- **D241** `--force` for an owner with nothing to chase: no draft, message, exit 0.
+- **D242** The env var check lives in `followup` and reads a value passed through `Deps`; the real env read stays in `cli/index.ts`.
+- **D243** Items with an unknown first name in the note (D41) get a recipient from the owners file by full name only, as in D230.
 
 ## Definition of done (summary)
 

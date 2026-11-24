@@ -4,8 +4,8 @@ Format: `Tnn | satisfies | file | tests (see testcases.md) | depends on`. Work i
 
 ## Phase 0: decisions and setup
 
-- [ ] T01 | all `Q-nn` in plan.md | `docs/FRD.md` section 11 (new D77+ rows) | TC-58 to TC-73 renamed | none
-  - Decisions Q-01 to Q-19 are settled (see the Decisions section of plan.md). Record each as a new decision D77 onward in the same change. Implement each Q-item per decision Q-nn.
+- [ ] T01 | all `D-nn` in plan.md | `docs/FRD.md` section 11 (new rows for decisions D77 to D95 for this spec) | TC-58 to TC-73 renamed | none
+  - Decisions D77 to D95 are settled (see the Decisions section of plan.md). Record each as a new decision within D77 to D95 for this spec, in the same change. Implement each D-item per its decision ID.
 - [ ] T02 | baseline | repo | none | none
   - Run `npm run check` on the scaffold. Record that the spec 01 stubs show as todo, not failing, before changes.
 - [ ] T03 | fixtures | `tests/fixtures/notes/` | none | none
@@ -24,15 +24,15 @@ Format: `Tnn | satisfies | file | tests (see testcases.md) | depends on`. Work i
 - [ ] T08 | D26.1, D12.1, D12.3, D26.2, D27.1, D27.2, D37.1, D64.2, D64.3 | `tests/unit/ingest-parsing.test.ts` | TC-31 to TC-44 (not Q) | T04
   - Replace the extractItems `it.todo` lines with real failing tests. Each test asserts the item list and the ignored kind list.
 - [ ] T09 | D29.1, D29.2, NFR-D3, D35.3 scope | `tests/unit/ingest-parsing.test.ts` | TC-01 to TC-04 | T03
-  - Replace the listNoteFiles `it.todo` lines with real failing tests. Move the D35.3 stub out to spec 06 per decision Q-19; rename the `D5.2` stub to `D50.1` (see plan risks).
+  - Replace the listNoteFiles `it.todo` lines with real failing tests. Move the D35.3 stub out to spec 06 per decision D95; rename the `D5.2` stub to `D50.1` (see plan risks).
 - [ ] T10 | D5.1, D55.1 to D55.3, D64.1, D22.1 to D22.3, D57.1, D65.1, NFR-R1, NFR-R2, NFR-R5, NFR-SEC4 | `tests/unit/edge-cases.test.ts` | TC-16 to TC-30, TC-45 to TC-47, TC-49 | T03, T04
   - Replace the E4 stubs and add the readNote and skip tests as real failing tests. Build temp files inside the test (see testcases.md, Fixtures needed).
 - [ ] T11 | NFR-A1 to NFR-A4 | `tests/acceptance/sample-notes.test.ts` | TC-50 to TC-57 | T05
   - Write the eight sample checks as failing tests. TC-54 asserts presence per kind now; exact counts are added in T42.
 - [ ] T12 | red check | all three test files | all non-Q TCs | T06 to T11
   - Run `npm test`. Every new spec 01 test must fail with `NotImplementedError` (or a wrong value), not a syntax or import error. Fix test code until only the intended failures remain.
-- [ ] T13 | settled decisions Q-01 to Q-19 | `tests/unit/*.test.ts` | TC-58 to TC-73 | T01
-  - Write the Q-rows as failing tests, named with the decision ID (per decision Q-nn). Do not add `it.todo`.
+- [ ] T13 | settled decisions D77 to D95 | `tests/unit/*.test.ts` | TC-58 to TC-73 | T01
+  - Write the D-rows as failing tests, named with the decision ID (per its decision ID). Do not add `it.todo`.
 
 ## Phase 2: green, in dependency order
 
@@ -84,15 +84,15 @@ Note reading
 - [ ] T34 | D65.1, D50.1 | `src/parser/items.ts` and `note.ts` | TC-45 (line skip shape) | T26, T31
   - Line-level skip shape `{file, line, reason}` produced by the caller path; check the shape matches the type in `src/domain/types.ts`.
 
-Decision tasks (per decisions Q-01 to Q-19; one task per decision group, same change as the decision)
-- [ ] T35 | Q-01, Q-17, Q-16 | `src/parser/header.ts`, `note.ts` | TC-58, TC-71, TC-72 | T13, T31
-- [ ] T36 | Q-02 | `src/parser/note.ts` | TC-59 | T13, T32
-- [ ] T37 | Q-03 | `src/parser/note.ts` | TC-60 | T13, T33
-- [ ] T38 | Q-04, Q-05, Q-15 | `src/parser/items.ts` | TC-39, TC-40, TC-61, TC-70 | T13, T21, T24
-- [ ] T39 | Q-06, Q-10, Q-11 | `src/parser/header.ts` | TC-62, TC-65, TC-66 | T13, T16, T20
-- [ ] T40 | Q-08 (and Q-07 check via TC-63 in T31) | `src/domain/types.ts` (`Note` gets the absolute first body line), `note.ts`, `items.ts` | TC-48 | T13, T31
+Decision tasks (per decisions D77 to D95; one task per decision group, same change as the decision)
+- [ ] T35 | D77, D93, D92 | `src/parser/header.ts`, `note.ts` | TC-58, TC-71, TC-72 | T13, T31
+- [ ] T36 | D78 | `src/parser/note.ts` | TC-59 | T13, T32
+- [ ] T37 | D79 | `src/parser/note.ts` | TC-60 | T13, T33
+- [ ] T38 | D80, D81, D91 | `src/parser/items.ts` | TC-39, TC-40, TC-61, TC-70 | T13, T21, T24
+- [ ] T39 | D82, D86, D87 | `src/parser/header.ts` | TC-62, TC-65, TC-66 | T13, T16, T20
+- [ ] T40 | D84 (and D83 check via TC-63 in T31) | `src/domain/types.ts` (`Note` gets the absolute first body line), `note.ts`, `items.ts` | TC-48 | T13, T31
   - Type change: record the decision first. This changes signatures used by specs 04 and 05; check their tests.
-- [ ] T41 | Q-09, Q-12, Q-13, Q-14 | `src/parser/header.ts`, `note.ts` | TC-64, TC-67, TC-68, TC-69 | T13, T14, T15
+- [ ] T41 | D85, D88, D89, D90 | `src/parser/header.ts`, `note.ts` | TC-64, TC-67, TC-68, TC-69 | T13, T14, T15
 - [ ] T42 | NFR-A4 (counts) | `tests/acceptance/sample-notes.test.ts`, `testcases.md` row TC-54 | TC-54 | T11, T34, T38
   - Run the parse stage on the sample folder, record the exact ignored counts by kind and the four skip results, and write the counts into TC-54 in testcases.md. Review them by hand against the four trap files before recording. Only after review.
 - [ ] T43 | NFR-A2, NFR-A3 | `tests/acceptance/sample-notes.test.ts` | TC-50, TC-51, TC-52 | T33, T34, T32
@@ -117,13 +117,13 @@ Decision tasks (per decisions Q-01 to Q-19; one task per decision group, same ch
 
 ## Definition of done
 
-- [ ] Every decision Q-01 to Q-19 is recorded as D77+ in `docs/FRD.md`.
+- [ ] Every decision D77 to D95 for this spec is recorded in `docs/FRD.md`.
 - [ ] Every non-Q TC in testcases.md exists as a real test with its ID in the name, and passes.
-- [ ] The Q-rows pass; their names carry the decision ID.
+- [ ] The D-rows pass; their names carry the decision ID.
 - [ ] `readNote`, `listNoteFiles`, `parseHeader`, `extractItems`, `dateFromFilename` never throw on user input (negative TCs green).
 - [ ] The six skip reason strings are the only skip reasons: `empty file`, `not valid UTF-8`, `missing date`, `unparseable date`, `unreadable file` (note level) and `empty action item` (line level).
 - [ ] Sample acceptance checks NFR-A1 to NFR-A4 pass; TC-54 counts recorded.
 - [ ] `docs/TRACEABILITY.md` rows updated (T46); no other rows changed.
 - [ ] `npm run check` passes.
-- [ ] No file outside `src/parser/`, `src/domain/types.ts` (per decision Q-08), `tests/`, `docs/FRD.md`, `docs/TRACEABILITY.md`, and this spec folder was changed.
+- [ ] No file outside `src/parser/`, `src/domain/types.ts` (per decision D84), `tests/`, `docs/FRD.md`, `docs/TRACEABILITY.md`, and this spec folder was changed.
 - [ ] No file in `notes/` was changed.

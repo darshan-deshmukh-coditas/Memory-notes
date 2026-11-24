@@ -71,12 +71,12 @@ Items marked **(negative)** check that something does not happen.
 | TC-45 | D14.1, D69.1 | tests/unit/ingest-parsing.test.ts | [TC-45] ids are sequential in file-name then line order (D69.1) | unit | Two notes, several items each | Ids 1..n in that order | 0 |
 | TC-46 | D69.1 | tests/unit/ingest-parsing.test.ts | [TC-46] joint owner `Anita & Rahul` gives Anita the lower id (D69.1) | unit | One line naming both | Anita id < Rahul id | 0 |
 | TC-47 | D14.2 | tests/unit/commands.test.ts | [TC-47] new ids continue after the highest stored id, never reused (D14.2) | integration | Store with ids 1..5; new note | New item id 6 | 0 |
-| TC-48 | D3.1, Q8 | tests/unit/edge-cases.test.ts | [TC-48] identical lines twice in one note merge into one item and count as merged (Q8) | integration | One note with the same line twice | One item; merged count 1 | 0 |
+| TC-48 | D3.1, D179 | tests/unit/edge-cases.test.ts | [TC-48] identical lines twice in one note merge into one item and count as merged (D179) | integration | One note with the same line twice | One item; merged count 1 | 0 |
 | TC-49 | NFR-D3 | tests/unit/commands.test.ts | [TC-49] same notes on fresh stores give identical ids and statuses (NFR-D3) | integration | Ingest into two empty stores | Equal item lists | 0 |
 | TC-50 | D59.3 | tests/unit/commands.test.ts | [TC-50] missing store file is created on first run (D59.3) | integration | Store path absent | Store file exists after run | 0 |
-| TC-51 | D17.2, D59.1, Q14 | tests/unit/commands.test.ts | [TC-51] --store overrides ACTIONTRACK_STORE (Q14) | integration | Both set to different paths | Only the --store path is written | 0 |
+| TC-51 | D17.2, D59.1, D185 | tests/unit/commands.test.ts | [TC-51] --store overrides ACTIONTRACK_STORE (D185) | integration | Both set to different paths | Only the --store path is written | 0 |
 | TC-52 | NFR-SEC3, D32.1 | tests/unit/commands.test.ts | [TC-52] ingest never writes into the notes folder (NFR-SEC3) | integration (negative) | Folder with notes; hash before and after | Hashes equal; no new files in folder | 0 |
-| TC-53 | D29.1, D29.2, Q11 | tests/unit/commands.test.ts | [TC-53] only top-level .md files are read; others counted as ignored (D29.1) | integration (negative) | Folder with `.md`, `.txt` and a subfolder holding a `.md` | Subfolder note not read; ignored count reported (subfolder counts as one, Q11) | varies |
+| TC-53 | D29.1, D29.2, D182 | tests/unit/commands.test.ts | [TC-53] only top-level .md files are read; others counted as ignored (D29.1) | integration (negative) | Folder with `.md`, `.txt` and a subfolder holding a `.md` | Subfolder note not read; ignored count reported (subfolder counts as one, D182) | varies |
 | TC-54 | NFR-M2, NFR-D3 | tests/unit/commands.test.ts | [TC-54] result does not depend on the system clock (NFR-M2) | integration | Same folder, fixed --today, two different fake clocks | Identical items and summary numbers | 0 |
 | TC-55 | D58.1 | tests/unit/ingest-parsing.test.ts | [TC-55] each source records file, meeting date and 1-based line (D58.1) | unit | Checkbox on line 7 of a note | Source `{file, meetingDate, line: 7}` | n/a |
 | TC-56 | NFR-A1, NFR-R1 | tests/acceptance/sample-notes.test.ts | [TC-56] A1: ingest completes on the sample folder with no crash (NFR-A1) | acceptance | `notes/` (35 .md plus 1 .txt) | Finishes; no uncaught error | 1 |
@@ -93,9 +93,9 @@ Items marked **(negative)** check that something does not happen.
 | TC-67 | NFR-P4 | tests/acceptance/sample-notes.test.ts | [TC-67] P4: 1 MB note processed without failure (NFR-P4) | acceptance | Generated 1 MB note with checkbox lines | Completes; items stored | 0 |
 | TC-68 | NFR-R2, NFR-U6 | tests/acceptance/sample-notes.test.ts | [TC-68] every skipped sample note appears in the stderr report (NFR-R2) | acceptance | As TC-56 | Count of `Skipped notes:` lines equals count of skipped notes in totals (4) | 1 |
 | TC-69 | NFR-M3 | tests/unit/commands.test.ts | [TC-69] ingest never calls the connector (NFR-M3) | integration (negative) | Fake `connector` that records calls | Zero calls | 0 |
-| TC-70 | NFR-A9, D13.1, Q3 | tests/unit/commands.test.ts | [TC-70] run with zero item changes does not rewrite the store file (Q3) | integration | Second run on unchanged folder | Store file bytes unchanged (not rewritten, Q3); ids unchanged | 0 |
-| TC-71 | D20.2, D35.3, Q4 | tests/unit/commands.test.ts | [TC-71] folder whose .md notes are all skipped exits 1 and creates an empty store (Q4) | integration | Folder with only empty and untitled notes | Exit 1, not 2; skip report printed; store created with no items | 1 |
-| TC-72 | D13, Q1 | tests/unit/commands.test.ts | [TC-72] line that changes due date on re-run updates the due date (Q1) | integration | Run 1 `by Friday`; run 2 same line `by Monday` | Same id; due is the new date | 0 |
+| TC-70 | NFR-A9, D13.1, D174 | tests/unit/commands.test.ts | [TC-70] run with zero item changes does not rewrite the store file (D174) | integration | Second run on unchanged folder | Store file bytes unchanged (not rewritten, D174); ids unchanged | 0 |
+| TC-71 | D20.2, D35.3, D175 | tests/unit/commands.test.ts | [TC-71] folder whose .md notes are all skipped exits 1 and creates an empty store (D175) | integration | Folder with only empty and untitled notes | Exit 1, not 2; skip report printed; store created with no items | 1 |
+| TC-72 | D13, D172 | tests/unit/commands.test.ts | [TC-72] line that changes due date on re-run updates the due date (D172) | integration | Run 1 `by Friday`; run 2 same line `by Monday` | Same id; due is the new date | 0 |
 
 ## Negative case count
 

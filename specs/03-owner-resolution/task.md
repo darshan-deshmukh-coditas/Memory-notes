@@ -1,16 +1,16 @@
 # Tasks: 03 Owner resolution
 
-Order follows CLAUDE.md: spec ID, then red test, then green implementation, then refactor, then TRACEABILITY and `npm run check`. Test IDs (TC-nn) refer to `testcases.md`. "deps" lists earlier tasks that must be done first. Tasks marked **(per decision Qn)** follow the decision recorded for Qn in `plan.md`.
+Order follows CLAUDE.md: spec ID, then red test, then green implementation, then refactor, then TRACEABILITY and `npm run check`. Test IDs (TC-nn) refer to `testcases.md`. "deps" lists earlier tasks that must be done first. Tasks marked **(per decision ID)** follow the decision with that ID in `plan.md` (D116 to D135 for this spec).
 
 Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 
 ## Phase 0: resolve the stub mismatches and record decisions
 
-- [ ] **T01** | Q1, spec Modules row | `src/owners/resolve.ts` | none | none | Rename stub `matchOwnerArg` to `resolveOwnerArg`. Add `parseOwnerPhrase` and `buildRoster` stubs throwing `NotImplementedError`. Keep the existing function docs.
-- [ ] **T02** | Q3 | `src/domain/types.ts` | none | T01 | Change `OwnerResolution.unresolved` from `firstName` to `text` (raw owner text), per D68.1. **(per decision Q3)**
-- [ ] **T03** | Q2 | `src/owners/resolve.ts` | none | T01 | Change `resolveOwner` to return an array of results, one per `&` part. **(per decision Q2)**
-- [ ] **T04** | Q13 | `src/owners/resolve.ts`, `src/domain/errors.ts` | none | T01 | Define the `resolveOwnerArg` result type (`person`, `label`, `no-match`) and add a usage-error subclass of `ActiontrackError` for ambiguous first names (check which error classes already exist first). **(per decision Q13)**
-- [ ] **T05** | Q1, Q2, Q3, Q13 | `docs/FRD.md` section 11 | none | T02, T03, T04 | Copy each decision Q1, Q2, Q3 and Q13 from `plan.md`'s Decisions section into `docs/FRD.md` section 11 as a new decision (D77 or later). Do not change earlier D entries. Do this before any red test cites these decisions.
+- [ ] **T01** | D116, spec Modules row | `src/owners/resolve.ts` | none | none | Rename stub `matchOwnerArg` to `resolveOwnerArg`. Add `parseOwnerPhrase` and `buildRoster` stubs throwing `NotImplementedError`. Keep the existing function docs.
+- [ ] **T02** | D120 | `src/domain/types.ts` | none | T01 | Change `OwnerResolution.unresolved` from `firstName` to `text` (raw owner text), per D68.1. **(per decision D120)**
+- [ ] **T03** | D117 | `src/owners/resolve.ts` | none | T01 | Change `resolveOwner` to return an array of results, one per `&` part. **(per decision D117)**
+- [ ] **T04** | D132 | `src/owners/resolve.ts`, `src/domain/errors.ts` | none | T01 | Define the `resolveOwnerArg` result type (`person`, `label`, `no-match`) and add a usage-error subclass of `ActiontrackError` for ambiguous first names (check which error classes already exist first). **(per decision D132)**
+- [ ] **T05** | D116, D117, D120, D132 | `docs/FRD.md` section 11 | none | T02, T03, T04 | Copy each decision D116, D117, D120 and D132 from `plan.md`'s Decisions section into `docs/FRD.md` section 11 as a new decision (D116 to D135 for this spec). Do not change earlier D entries. Do this before any red test cites these decisions.
 
 ## Phase 1: red tests (turn stubs into failing tests)
 
@@ -26,8 +26,8 @@ Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 - [ ] **T15** | D42.1, D42.2 | same file (E2/E3) | TC-48, TC-49, TC-43 | T01 | Add token and label tests. Red.
 - [ ] **T16** | D61.1, D61.2 | same file (E3) | TC-50, TC-51, TC-52 | T01 | Add roster tests for `buildRoster`. Red.
 - [ ] **T17** | rule 12 | same file (E3) | TC-21, TC-24 | T01 | Add case-insensitive name tests. Red (TC-21 is also in T10; do not duplicate).
-- [ ] **T18** | Q6 **(per decision Q6)** | same file (E3) | TC-36, TC-37 | T05 | Add accent and hyphen tests per decision Q6. Red.
-- [ ] **T19** | Q2b, Q2c, Q7a, Q7b, Q7c, Q8, Q9, Q5 **(per decision Q2b, Q2c, Q7a, Q7b, Q7c, Q8, Q9, Q5)** | same file (E2/E3) | TC-33, TC-34, TC-35, TC-38, TC-39, TC-40, TC-41, TC-42, TC-24 | T05 | Add the tests for these decisions. Red.
+- [ ] **T18** | D123 **(per decision D123)** | same file (E3) | TC-36, TC-37 | T05 | Add accent and hyphen tests per decision D123. Red.
+- [ ] **T19** | D118, D119, D124, D125, D126, D127, D128, D122 | same file (E2/E3) | TC-33, TC-34, TC-35, TC-38, TC-39, TC-40, TC-41, TC-42, TC-24 | T05 | Add the tests for these decisions. Red.
 - [ ] **T20** | NFR-SEC4 | same file (E3) | TC-53 | T01 | Add hostile-text test. Red.
 - [ ] **T21** | NFR-R1 | same file (E3) | TC-54 | T01 | Add the never-throw property test over the listed inputs. Red.
 - [ ] **T22** | NFR-A6, NFR-A7, NFR-A8 | `tests/acceptance/owners.acceptance.test.ts` (new) | TC-55, TC-56, TC-57, TC-58 | T01, T29 | Add the four acceptance tests. Mark them red and expected to stay red until spec 01 and spec 06 deliver the sample pipeline. Use `it.todo` if the pipeline does not exist yet, and say so in the test name.
@@ -41,28 +41,28 @@ Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 ## Phase 3: green implementation
 
 - [ ] **T26** | D50.2, D67.1 | `src/owners/resolve.ts` `parseOwnerPhrase` | TC-06, TC-08, TC-09 | T01 | Split on the first case-sensitive lower-case ` to ` (word boundary). No match gives no-owner with full text.
-- [ ] **T27** | D25.1, D25.2, D46.1 | `src/owners/resolve.ts` | TC-01 to TC-05, TC-43 | T26 | Placeholder detection by exact phrase (case-insensitive per Q4). Return `none` or `group`.
-- [ ] **T28** | D67.2, D24.2 | `parseOwnerPhrase` | TC-10, TC-11, TC-40, TC-41 | T26 | `@name:` form, tested before the ` to ` split (Q8). No colon: treat as ordinary phrase.
-- [ ] **T29** | D24.1 surname-initial, rule 10 | `src/owners/resolve.ts` | TC-12, TC-13, TC-14, TC-35 | T26 | Parse `First N.` (dot optional per Q7c). Match attendee surname initial, case-insensitive. No match gives `unresolved`.
-- [ ] **T30** | D24.3, D60.2 | `parseOwnerPhrase`, `resolveOwner` | TC-15, TC-16, TC-18, TC-19, TC-39 | T03 | Split only on `&`. Trim each part. Dedupe identical parts (Q2b). Return one result per part.
-- [ ] **T31** | D24.4 | `parseOwnerPhrase` | TC-17 | T26 | Strip trailing `(with ...)` from each part, keep the collaborator in the task text (Q10).
+- [ ] **T27** | D25.1, D25.2, D46.1 | `src/owners/resolve.ts` | TC-01 to TC-05, TC-43 | T26 | Placeholder detection by exact phrase (case-insensitive per D121). Return `none` or `group`.
+- [ ] **T28** | D67.2, D24.2 | `parseOwnerPhrase` | TC-10, TC-11, TC-40, TC-41 | T26 | `@name:` form, tested before the ` to ` split (D127). No colon: treat as ordinary phrase.
+- [ ] **T29** | D24.1 surname-initial, rule 10 | `src/owners/resolve.ts` | TC-12, TC-13, TC-14, TC-35 | T26 | Parse `First N.` (dot optional per D126). Match attendee surname initial, case-insensitive. No match gives `unresolved`.
+- [ ] **T30** | D24.3, D60.2 | `parseOwnerPhrase`, `resolveOwner` | TC-15, TC-16, TC-18, TC-19, TC-39 | T03 | Split only on `&`. Trim each part. Dedupe identical parts (D118). Return one result per part.
+- [ ] **T31** | D24.4 | `parseOwnerPhrase` | TC-17 | T26 | Strip trailing `(with ...)` from each part, keep the collaborator in the task text (D129).
 - [ ] **T32** | D4.1, rule 9 | `resolveOwner` | TC-22, TC-23, TC-20, TC-21 | T26 | First-name match against attendees, case-insensitive. Exactly one: person. Two or more: `ambiguous`. None: fall to roster.
-- [ ] **T33** | rule 12 | `resolveOwner` | TC-24 | T32 | Full-name match, case-insensitive, returning the attendee spelling (Q5).
+- [ ] **T33** | rule 12 | `resolveOwner` | TC-24 | T32 | Full-name match, case-insensitive, returning the attendee spelling (D122).
 - [ ] **T34** | D41.1, D41.2, D41.3, D23.2, NFR-A8 | `resolveOwner` | TC-27, TC-28, TC-29, TC-30, TC-31, TC-32 | T32 | Roster fallback. `viaRoster: true` for a unique match. Several gives `ambiguous`. None gives `unresolved`.
-- [ ] **T35** | D60.1 | `resolveOwner` | TC-25, TC-26 | T33, T34 | Full name not in attendees: accept if on roster (`viaRoster: true`, Q15); else `unresolved`.
-- [ ] **T36** | D24.1 with roster, Q7a, Q7b | `resolveOwner` | TC-33, TC-34 | T29, T34 | Initial form uses the roster when no attendee has the first name (Q7b). Two matches on first name and initial give `ambiguous` (Q7a).
-- [ ] **T37** | Q6 **(per decision Q6)** | `resolveOwner` | TC-36, TC-37 | T18, T32 | Exact match after case folding; no accent folding; hyphen and apostrophe are name characters.
-- [ ] **T38** | Q9 **(per decision Q9)** | `parseOwnerPhrase` | TC-07, TC-42 | T26 | Non-empty phrase before ` to ` is an owner phrase, resolved to `unresolved`. Empty phrase gives `(no owner)` with full text.
-- [ ] **T39** | D61.1, D61.2 | `src/owners/resolve.ts` `buildRoster` | TC-50, TC-51, TC-52 | T01 | Union of names from read notes and store names. Skipped notes contribute nothing. Case-insensitive dedupe keeping first spelling (Q12).
+- [ ] **T35** | D60.1 | `resolveOwner` | TC-25, TC-26 | T33, T34 | Full name not in attendees: accept if on roster (`viaRoster: true`, D134); else `unresolved`.
+- [ ] **T36** | D24.1 with roster, D124, D125 | `resolveOwner` | TC-33, TC-34 | T29, T34 | Initial form uses the roster when no attendee has the first name (D125). Two matches on first name and initial give `ambiguous` (D124).
+- [ ] **T37** | D123 **(per decision D123)** | `resolveOwner` | TC-36, TC-37 | T18, T32 | Exact match after case folding; no accent folding; hyphen and apostrophe are name characters.
+- [ ] **T38** | D128 | `parseOwnerPhrase` | TC-07, TC-42 | T26 | Only a known owner word before ` to ` is an owner phrase. Any other text, including a non-empty word such as `Schedule`, gives `(no owner)` with the full text. An empty phrase also gives `(no owner)` with the full text.
+- [ ] **T39** | D61.1, D61.2 | `src/owners/resolve.ts` `buildRoster` | TC-50, TC-51, TC-52 | T01 | Union of names from read notes and store names. Skipped notes contribute nothing. Case-insensitive dedupe keeping first spelling (D131).
 - [ ] **T40** | D4.4, D31.3 | `resolveOwnerArg` | TC-44, TC-45, TC-46 | T04 | Full name: case-insensitive match. First name matching one: that person. Several: throw usage error listing the choices.
-- [ ] **T41** | D72.1 | `resolveOwnerArg` | TC-47 | T04 | Unknown name returns the no-match result, no throw (Q13).
+- [ ] **T41** | D72.1 | `resolveOwnerArg` | TC-47 | T04 | Unknown name returns the no-match result, no throw (D132).
 - [ ] **T42** | D42.1, D42.2 | `resolveOwnerArg` | TC-48, TC-49 | T40 | Tokens `none`, `group`, `ambiguous`, `unresolved` map to labels before any name lookup (D42.2 limitation).
 - [ ] **T43** | NFR-SEC4, NFR-R1 | `src/owners/resolve.ts` | TC-53, TC-54 | T26 to T42 | No `eval`, no shell, no regex built from note text. Wrap nothing in try/catch; make every branch return a value. Re-run TC-53 and TC-54.
 - [ ] **T44** | BR-10 / E3, BR-09 / E2 | all of the above | TC-01 to TC-54 | T26 to T43 | Run the full unit suite. All TCs green except the acceptance set in T22.
 
 ## Phase 4: refactor (tests stay green)
 
-- [ ] **T45** | NFR-M1 | `src/owners/resolve.ts` | all unit TCs | T44 | Extract one name-normalise helper (case fold, trim, strip trailing punctuation per Q4), used by parser and roster. Keep it pure.
+- [ ] **T45** | NFR-M1 | `src/owners/resolve.ts` | all unit TCs | T44 | Extract one name-normalise helper (case fold, trim, strip trailing punctuation per D121), used by parser and roster. Keep it pure.
 - [ ] **T46** | CLAUDE.md conventions | `src/owners/resolve.ts`, `src/domain/types.ts` | all | T45 | Remove any `any`, keep `strict` typing, `.js` suffix on relative imports, `node:path` not used here. Run `npm run typecheck`.
 - [ ] **T47** | CLAUDE.md dependency direction | `src/owners/resolve.ts` | all | T46 | Confirm the module imports only `domain/`. No import of `store` or `email`.
 - [ ] **T48** | NFR-M1 | `src/owners/resolve.ts` | all | T47 | Check the public API matches the spec Modules row: `parseOwnerPhrase`, `resolveOwner`, `buildRoster`, `resolveOwnerArg`. Remove stubs no longer used.
@@ -85,7 +85,7 @@ Columns: ID | spec / FRD ID | file | test turned green (TC) | deps | action.
 
 - [ ] Every TC-01 to TC-58 exists with the exact test name in `testcases.md` (the unit set in `tests/unit/edge-cases.test.ts`, the acceptance set in the acceptance folder).
 - [ ] No `it.todo` remains in the E2 and E3 blocks for the IDs in this spec. The E4 and E1 todos are out of scope.
-- [ ] Every decision in `plan.md`'s Decisions section (Q1 to Q16) is recorded there and must be copied to `docs/FRD.md` section 11 as D77+. No earlier D entry was edited.
+- [ ] Every decision in `plan.md`'s Decisions section (D116 to D135) is recorded there and must be copied to `docs/FRD.md` section 11 under its ID. No earlier D entry was edited.
 - [ ] `resolveOwner`, `parseOwnerPhrase`, `buildRoster` and `resolveOwnerArg` exist with the names in the spec Modules row. No `matchOwnerArg` remains.
 - [ ] The resolver never throws on any listed input (TC-54). No note text is evaluated (TC-53).
 - [ ] Unit tests for owner labels, name forms, roster and arg matching are green. Acceptance tests for NFR-A6 to A8 are green once specs 01 and 06 run the sample folder, or are recorded as waiting on them.

@@ -18,6 +18,6 @@ One `spec.md` per capability (FRD D43). Docs in `docs/` stay the source of truth
 
 ## Open decisions
 
-None. Every default that the first draft of the specs listed (P1 to P34) was put to the requester and is now recorded as decisions D63 to D76 in `docs/FRD.md`. If the specs are silent on something, stop and ask (CLAUDE.md), then record the answer as D77 or later.
+None. Every default that the first draft of the specs listed (P1 to P34) was put to the requester and is now recorded as decisions D63 to D76 in `docs/FRD.md`. If the specs are silent on something, stop and ask (CLAUDE.md), then record the answer as the next free D-number in `docs/FRD.md` section 11.
 
 Types that must change when the specs are implemented: `Source` and `ActionItem` already match; add `itemIds` to `DraftRecord`, add `roster` to `StoreFile`, and add `INTERNAL: 4` to `EXIT` (D62).

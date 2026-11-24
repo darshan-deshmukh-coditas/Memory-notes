@@ -17,7 +17,7 @@ Let the user mark one stored action item as done. The change goes to the item st
 
 **Out of scope**
 - Writing back to the source note, checking the box in markdown: out of scope, decided by FR-D32.1 (OQ-41 resolved). Not a future feature of this spec.
-- Reopening a done item (no `undone` command exists in any spec). Re-ingest never reopens (D13.2, D3.5). See decision Q2.
+- Reopening a done item (no `undone` command exists in any spec). Re-ingest never reopens (D13.2, D3.5). See decision D212.
 - Store format, atomic write and corrupt-store handling: spec `05-store` (D17, D59, D69).
 - Ingest, dedupe and id assignment: spec `06-ingest`, `04-dedupe`.
 - The `list` display of done items: spec `07-list` (D15.4, D44.2).
@@ -48,11 +48,11 @@ Let the user mark one stored action item as done. The change goes to the item st
 
 ## Design approach
 
-1. Parse `<id>` with a strict check: `^[1-9][0-9]*$`, within safe integer range. Otherwise usage error, exit 2, store untouched (Behaviour 1). Edge cases are settled in decisions Q4 and Q5.
+1. Parse `<id>` with a strict check: `^[1-9][0-9]*$`, within safe integer range. Otherwise usage error, exit 2, store untouched (Behaviour 1). Edge cases are settled in decisions D214 and D215.
 2. Validate `--today` if given (D54.1) with the same validator used by all commands. Do this before touching the store.
 3. Load the store via `store/store.ts` `loadStore(path)`. A missing store is an unknown id (exit 2, D59.3). A corrupt or wrong-version store is exit 2 and is not written (D59.4, D69.2).
 4. Look up the item by id. Unknown id: exit 2, no write (D32.2).
-5. If stored status is already `done`: print the "already done" message with id, owner and task, exit 0, and do not call save (D32.3; Q1).
+5. If stored status is already `done`: print the "already done" message with id, owner and task, exit 0, and do not call save (D32.3; D211).
 6. Otherwise set stored status to `done`, save atomically (D59.2), print confirmation with id, owner and task, exit 0.
 7. Save failure: clear message to stderr, exit 4, previous store file left intact (D62.1, NFR-R3).
 8. `done` never reads or writes a source note. It has no dependency on `parser/*`, `owners/*` or `dates/*`.
@@ -78,16 +78,16 @@ Ids are not renumbered or reassigned; `done` never creates an item (D14.2).
 
 ## Decisions
 
-- **Q1.** `done` on an item that is already done prints the already-done message (id, owner, task), exits 0, and does not rewrite the store file (FR-D32.3, spec Behaviour 4).
-- **Q2.** No reopen command in this spec. Re-ingest never reopens a done item (D13.2, D3.5).
-- **Q3.** One id per call. Two or more ids (e.g. `done 2 3`) is a usage error: exit 2, nothing changed.
-- **Q4.** Only canonical decimal ids from `1` up are accepted: no sign, no leading zero, no decimal point. Anything else (`01`, `+1`, `1.0`, `0`, `-1`, `1e3`) is exit 2.
-- **Q5.** An id beyond the largest assigned id, or beyond the safe integer range, is an unknown id: exit 2, no separate message (FR-D32.2).
-- **Q6.** The already-done message includes id, owner and task, as the success message does. Wording is free (FR-D65.3).
-- **Q7.** The unknown-id message names the id that was not found and states that nothing changed. Wording is free (FR-D65.3).
-- **Q8.** Validation order: id, then `--today`, then store load, then lookup. All these failures are exit 2, so only the message differs.
-- **Q9.** `done` acts on the store only and succeeds (exit 0) even if the source note was deleted or changed. It never checks notes (FR-D32.1).
-- **Q10.** `done` works on any stored item, including `(no owner)`, `(group)`, `(ambiguous)` and `(unresolved)`. Follow-up exclusion is spec 09's concern.
+- **D211.** `done` on an item that is already done prints the already-done message (id, owner, task), exits 0, and does not rewrite the store file (FR-D32.3, spec Behaviour 4).
+- **D212.** No reopen command in this spec. Re-ingest never reopens a done item (D13.2, D3.5).
+- **D213.** One id per call. Two or more ids (e.g. `done 2 3`) is a usage error: exit 2, nothing changed.
+- **D214.** Only canonical decimal ids from `1` up are accepted: no sign, no leading zero, no decimal point. Anything else (`01`, `+1`, `1.0`, `0`, `-1`, `1e3`) is exit 2.
+- **D215.** An id beyond the largest assigned id, or beyond the safe integer range, is an unknown id: exit 2, no separate message (FR-D32.2).
+- **D216.** The already-done message includes id, owner and task, as the success message does. Wording is free (FR-D65.3).
+- **D217.** The unknown-id message names the id that was not found and states that nothing changed. Wording is free (FR-D65.3).
+- **D218.** Validation order: id, then `--today`, then store load, then lookup. All these failures are exit 2, so only the message differs.
+- **D219.** `done` acts on the store only and succeeds (exit 0) even if the source note was deleted or changed. It never checks notes (FR-D32.1).
+- **D220.** `done` works on any stored item, including `(no owner)`, `(group)`, `(ambiguous)` and `(unresolved)`. Follow-up exclusion is spec 09's concern.
 
 ## Definition of done
 

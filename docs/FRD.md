@@ -9,7 +9,7 @@
 | Parent | BRD.md |
 | Companion | NFRD.md |
 | Technology | Not specified. The requirements are technology-agnostic, except for the Gmail MCP connector named in the scenario. |
-| Decisions | v0.7 holds 76 stakeholder decisions (D1 to D76) in section 11. D43 to D76 came from the spec-gap review that produced `specs/`; they close most "Still open" rows below. v0.5 held 42 decisions (D1 to D42). D21 to D35 were made after inspecting the sample `notes/` folder. D36 to D42 close the remaining functional gaps. Where section 11 conflicts with an earlier requirement or an open question, **section 11 wins**, and a later decision wins over an earlier one. |
+| Decisions | v0.8 holds 279 decisions (D1 to D279) in section 11. D43 to D76 came from the spec-gap review that produced `specs/`; they close most "Still open" rows below. v0.5 held 42 decisions (D1 to D42). D21 to D35 were made after inspecting the sample `notes/` folder. D36 to D42 close the remaining functional gaps. Where section 11 conflicts with an earlier requirement or an open question, **section 11 wins**, and a later decision wins over an earlier one. |
 
 **Conventions.**
 - "Shall" = a requirement taken from the scenario or directly implied by it.
@@ -858,6 +858,1320 @@ D63 to D76 settle every "Defaults to confirm" item that was in the first draft o
 |---|---|
 | FR-D76.1 | A single `create_draft` call, including server start-up, that takes longer than **60 seconds** is a connector failure: exit 3, nothing recorded. The value is fixed, not configurable. |
 | FR-D76.2 | Total time for `followup --all` stays unbounded (N2). |
+
+### Decisions D77 to D279 (made in the spec plans, 2026-11-24)
+
+These decisions were chosen by the requester while the spec plans were reviewed. They are numbered in one sequence in spec order (spec 01 to spec 11), and they amend or extend earlier decisions as named in each block. D136 is intentionally not used: spec 03 has 20 decisions (D116 to D135), and spec 04 starts at D137.
+
+#### D77. Blank Date value
+| ID | Requirement |
+|---|---|
+| FR-D77.1 | A blank `Date:` value counts as no date; the filename fallback applies, else `missing date`. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D78. Unreadable file skip
+| ID | Requirement |
+|---|---|
+| FR-D78.1 | An unreadable file (permission error, path is a directory) is skipped with reason `unreadable file`; this amends D65.1 so the skip reason strings are now six. |
+| Source | specs/01-note-parsing/plan.md |
+| Amends or extends | D65.1 |
+
+#### D79. Case-insensitive .md match
+| ID | Requirement |
+|---|---|
+| FR-D79.1 | `.md` is matched case-insensitively (so `.MD` is a note), dotfiles ending `.md` are notes, and a directory named `y.md` is not a note and is counted as ignored. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D80. Ignored counts in blocks
+| ID | Requirement |
+|---|---|
+| FR-D80.1 | Ignored-line counts inside fences, quotes and comments count only checkbox-looking lines. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D81. Backtick and tilde fences
+| ID | Requirement |
+|---|---|
+| FR-D81.1 | Both backtick and `~~~` fences are accepted, and an unclosed fence runs to end of file so later checkbox lines are ignored with no skip. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D82. Date with time part
+| ID | Requirement |
+|---|---|
+| FR-D82.1 | A date with a time part (for example `2026-09-09 10:30`) is an `unparseable date`. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D83. Skipped note counts
+| ID | Requirement |
+|---|---|
+| FR-D83.1 | A skipped note adds nothing to item or ignored counts, and only its skip entry is reported. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D84. Absolute line numbers
+| ID | Requirement |
+|---|---|
+| FR-D84.1 | Line numbers are absolute 1-based file lines counting header lines after BOM strip, a CRLF line counts once, and this extends the Note type with the absolute first body line. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D85. Blank attendee entries
+| ID | Requirement |
+|---|---|
+| FR-D85.1 | Empty attendee entries (`a,,b`, trailing comma) are dropped silently, and an email-only entry (`<x@y.z>`) is dropped. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D86. Impossible filename date
+| ID | Requirement |
+|---|---|
+| FR-D86.1 | An impossible date in the filename (for example `2026-13-01-x.md`) with no date key is a `missing date` skip. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D87. Month name parsing
+| ID | Requirement |
+|---|---|
+| FR-D87.1 | Month names are case-insensitive full English names only (`9 SEPTEMBER 2026` is accepted), and `9th September 2026` and `9 Sep 2026` are `unparseable date`. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D88. YAML wins over labels
+| ID | Requirement |
+|---|---|
+| FR-D88.1 | When a note has both YAML front matter and labelled lines, the YAML wins and labelled lines are not read. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D89. Unclosed front matter
+| ID | Requirement |
+|---|---|
+| FR-D89.1 | Unclosed YAML front matter (`---` with no closing `---`) is not a YAML block, so labelled lines are read from the lead. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D90. Lone CR is content
+| ID | Requirement |
+|---|---|
+| FR-D90.1 | A lone CR is ordinary content, the file is treated as one line, and there is no crash (matches D55.2). |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D91. Checkbox spacing rule
+| ID | Requirement |
+|---|---|
+| FR-D91.1 | `-[ ]` with no space after the bullet is not an item, `- [ ]text` is an item with text `text`, and tabs count as indentation. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D92. First Date line wins
+| ID | Requirement |
+|---|---|
+| FR-D92.1 | With several `Date:` lines in the lead, the first one wins and later ones are ignored. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D93. BOM-only file
+| ID | Requirement |
+|---|---|
+| FR-D93.1 | A BOM-only file is an `empty file` skip, since the BOM is stripped before the empty check. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D94. Missing folder throws
+| ID | Requirement |
+|---|---|
+| FR-D94.1 | A missing or unreadable folder makes `listNoteFiles` throw `ActiontrackError`, which spec 06 maps to exit 2 (extends FR-D20.3). |
+| Source | specs/01-note-parsing/plan.md |
+| Amends or extends | FR-D20.3 |
+
+#### D95. D35.3 stub moves to spec 06
+| ID | Requirement |
+|---|---|
+| FR-D95.1 | The D35.3 stub (`No notes found`, exit 2) moves to spec 06 tests, so this spec is scope only with no test here. |
+| Source | specs/01-note-parsing/plan.md |
+
+#### D96. Phrase resolver and whole-item finder
+| ID | Requirement |
+|---|---|
+| FR-D96.1 | `resolveDue` resolves one due phrase, and the new export `findDuePhrase` scans a whole item text (extends D8 and D48). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D8 and D48 |
+
+#### D97. Earlier resolved phrase kept on later failure
+| ID | Requirement |
+|---|---|
+| FR-D97.1 | An earlier resolved phrase and a later failing `by`/`due`/`for <month>` phrase keep the resolved date and flag the item, e.g. `by Friday` plus `by mid-October` stores Friday, flagged (applies D48.2). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D98. ISO week for next week
+| ID | Requirement |
+|---|---|
+| FR-D98.1 | `next week` is the Monday-to-Sunday ISO week after the meeting's week, so a Sunday meeting 2026-10-11 gives 2026-10-12 (applies D9.1 and D33.2). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D99. Bare weekday versus next weekday
+| ID | Requirement |
+|---|---|
+| FR-D99.1 | A bare weekday is the next occurrence strictly after the meeting day, while `next <weekday>` falls in the following ISO week (applies D8.2 and D33.2). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D100. Case-insensitive wording
+| ID | Requirement |
+|---|---|
+| FR-D100.1 | All wording is case-insensitive, and the owner `to` stays case-sensitive (extends D66.1 and D67.1). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D66.1 and D67.1 |
+
+#### D101. Accepted month name forms
+| ID | Requirement |
+|---|---|
+| FR-D101.1 | Month names accept full English names, three-letter abbreviations and `Sept`, and other spellings are unresolvable (extends D10.1 and D33.1). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D10.1 and D33.1 |
+
+#### D102. Unlisted wording flagged
+| ID | Requirement |
+|---|---|
+| FR-D102.1 | Unlisted wording such as `by today`, `tomorrow EOD`, `EOD Friday`, `end of the month`, `2026/10/09` and `10.10.2026` stores no date and is flagged after `by` or `due`, while `for 4 Mar` stays in the text unflagged (extends D8.4 and D66.3). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D8.4 and D66.3 |
+
+#### D103. Slash dates never guessed
+| ID | Requirement |
+|---|---|
+| FR-D103.1 | `03/04` is never guessed: it is flagged after `by`, `due` or `for`, and kept as plain text after `on` or `from` (applies D10.3 and D48.3). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D104. Ordinal suffix must match
+| ID | Requirement |
+|---|---|
+| FR-D104.1 | An ordinal suffix must match its number (1st, 2nd, 3rd, 4th, 21st, 31st), so `Oct 2th` is unresolvable (extends D33.1). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D33.1 |
+
+#### D105. Invalid and non-leap dates
+| ID | Requirement |
+|---|---|
+| FR-D105.1 | Invalid or non-leap calendar dates are unresolvable and flagged after `by`, `due` or `for`, while `by 2028-02-29` resolves (extends D10.1). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D10.1 |
+
+#### D106. Explicit ISO date stored as written
+| ID | Requirement |
+|---|---|
+| FR-D106.1 | An explicit ISO date is stored as written even when it falls outside the meeting window (applies D10.1 and D34.1). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D107. Rollover cutoff
+| ID | Requirement |
+|---|---|
+| FR-D107.1 | The rollover cutoff is the meeting date minus 6 calendar months, clamped to month end, and a date exactly on the cutoff does not roll (extends D34.1). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D34.1 |
+
+#### D108. Rollover before weekday check
+| ID | Requirement |
+|---|---|
+| FR-D108.1 | Year rollover runs before the weekday check, so `Tue 5 Jan` on a 2026-12-01 meeting gives 2027-01-05 with no warning (extends D33.4). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D33.4 |
+
+#### D109. Stored flag is the boolean only
+| ID | Requirement |
+|---|---|
+| FR-D109.1 | The stored flag is the `dueFlagged` boolean only, and unresolved wording is reported by ingest but not stored (applies spec 05 and spec 06). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D110. CLI date forms
+| ID | Requirement |
+|---|---|
+| FR-D110.1 | The CLI accepts ISO dates, `4 Mar` and `4 March 2026`, and weekday names, `today` and slash dates are errors (extends D31.6 and D38.1). |
+| Source | specs/02-date-resolution/plan.md |
+| Amends or extends | D31.6 and D38.1 |
+
+#### D111. Today is the local calendar date
+| ID | Requirement |
+|---|---|
+| FR-D111.1 | `today` is the machine's local calendar date via `systemClock`'s local getters, and NFR-C4 stays open (applies D1.3). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D112. Far-future year-less date
+| ID | Requirement |
+|---|---|
+| FR-D112.1 | A year-less date far in the future uses the meeting's year with no rollback (applies D34.1). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D113. Phrase removal from task text
+| ID | Requirement |
+|---|---|
+| FR-D113.1 | The resolved phrase is removed together with one adjoining dash or comma, then spaces are trimmed (applies D49.1 and D49.2). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D114. Parenthesised dates in D47 sample
+| ID | Requirement |
+|---|---|
+| FR-D114.1 | Parenthesised dates in the D47 sample, such as `by Mon (2026-09-18)`, are meeting dates and not due dates (applies D47). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D115. Month-name false positives
+| ID | Requirement |
+|---|---|
+| FR-D115.1 | `for <month name>` in task text is flagged under D48.2, kept as specified, and recorded as a known false-positive class (applies D48.2). |
+| Source | specs/02-date-resolution/plan.md |
+
+#### D116. Spec names are authoritative
+| ID | Requirement |
+|---|---|
+| FR-D116.1 | Function names follow the spec (resolveOwner, parseOwnerPhrase, buildRoster, resolveOwnerArg), so the stub matchOwnerArg is renamed and the missing stubs are added. |
+| Source | specs/03-owner-resolution/plan.md |
+
+#### D117. Joint owner gives one result per person
+| ID | Requirement |
+|---|---|
+| FR-D117.1 | One owner text naming two people (Anita & Rahul) returns one result per person, so resolveOwner returns an array; extends D24.3. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.3 |
+
+#### D118. Same person twice gives one item
+| ID | Requirement |
+|---|---|
+| FR-D118.1 | Anita & Anita gives one result; extends D24.3. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.3 |
+
+#### D119. Group joined with a person
+| ID | Requirement |
+|---|---|
+| FR-D119.1 | Everyone & Rahul gives a group result plus Rahul's own result; extends D24.3. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.3 |
+
+#### D120. Unresolved keeps raw owner text
+| ID | Requirement |
+|---|---|
+| FR-D120.1 | The (unresolved) result carries the raw owner text in text, not firstName; applies D68.1. |
+| Source | specs/03-owner-resolution/plan.md |
+
+#### D121. Placeholder words are normalised
+| ID | Requirement |
+|---|---|
+| FR-D121.1 | Placeholder words match case-insensitively with a trailing ., comma or colon stripped; follows the D66.1 precedent. |
+| Source | specs/03-owner-resolution/plan.md |
+
+#### D122. Output uses canonical spelling
+| ID | Requirement |
+|---|---|
+| FR-D122.1 | A resolved owner is shown in the spelling from attendees or the roster, not the typed form. |
+| Source | specs/03-owner-resolution/plan.md |
+
+#### D123. Exact name match, no accent folding
+| ID | Requirement |
+|---|---|
+| FR-D123.1 | Names match exactly after case folding, so Jose does not match José; hyphen and apostrophe are name characters; extends D4.1. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D4.1 |
+
+#### D124. Same first name and initial is ambiguous
+| ID | Requirement |
+|---|---|
+| FR-D124.1 | Two attendees sharing a first name and surname initial give (ambiguous); extends D24.1. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.1 |
+
+#### D125. Initial form falls back to roster
+| ID | Requirement |
+|---|---|
+| FR-D125.1 | If no attendee has the first name, the roster is used for the First N. form; extends D24.1 and spec rule 10. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.1 and spec rule 10 |
+
+#### D126. Dot is optional in initial form
+| ID | Requirement |
+|---|---|
+| FR-D126.1 | Priya N and Priya N. match alike, and several matches give (ambiguous); extends D24.1. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.1 |
+
+#### D127. Owner word must precede ' to '
+| ID | Requirement |
+|---|---|
+| FR-D127.1 | ' to ' splits owner from task only when the word before it is a known owner or roster name, @name: is tested first, and @name with no colon is an unresolved phrase; extends D67.1 and D67.2. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D67.1 and D67.2 |
+
+#### D128. Non-owner word before ' to ' stays in task
+| ID | Requirement |
+|---|---|
+| FR-D128.1 | A phrase with no capitalised owner before ' to ' gives owner (no owner) with the full text as the task, for example 'Schedule to review budget'; extends D50.2 and D67.1. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D50.2 and D67.1 |
+
+#### D129. Collaborator in brackets stripped from owner
+| ID | Requirement |
+|---|---|
+| FR-D129.1 | A trailing (with X) is stripped from each & part and the collaborator stays in the task text; extends D24.4. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D24.4 |
+
+#### D130. Wrong surname is unresolved
+| ID | Requirement |
+|---|---|
+| FR-D130.1 | A full name with a wrong surname (Priya Sharma when only Priya Shah is an attendee) gives (unresolved), with no fallback to the first name. |
+| Source | specs/03-owner-resolution/plan.md |
+
+#### D131. Roster dedupe keeps first spelling
+| ID | Requirement |
+|---|---|
+| FR-D131.1 | Roster names compare case-insensitively and the first spelling seen wins (store names first, then notes in read order); extends D61.2. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D61.2 |
+
+#### D132. resolveOwnerArg result shape
+| ID | Requirement |
+|---|---|
+| FR-D132.1 | resolveOwnerArg returns person, label or no-match; an ambiguous first name throws a usage error and knownOwners is roster plus store names; extends D4.4, D31.3 and D72.1. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D4.4, D31.3 and D72.1 |
+
+#### D133. Person named none keeps label
+| ID | Requirement |
+|---|---|
+| FR-D133.1 | A person literally named none gives a warning and keeps the (no owner) label, with the warning returned as data; extends D42.2. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D42.2 |
+
+#### D134. Roster full-name match is flagged
+| ID | Requirement |
+|---|---|
+| FR-D134.1 | A full name matched on the roster sets viaRoster true so the ingest summary notes it; extends D60.1 and D41.1. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D60.1 and D41.1 |
+
+#### D135. @ form is case-insensitive
+| ID | Requirement |
+|---|---|
+| FR-D135.1 | @Anita: matches Anita, comparing case-insensitively; extends D67.2 and D24.2. |
+| Source | specs/03-owner-resolution/plan.md |
+| Amends or extends | D67.2 and D24.2 |
+
+#### D137. Normalisation order
+| ID | Requirement |
+|---|---|
+| FR-D137.1 | Normalise by lowercasing, removing punctuation, splitting on whitespace, dropping whole-word a, an and the, and joining with one space (extends D28.2, D36.2). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D28.2 and D36.2 |
+
+#### D138. Apostrophes and hyphens
+| ID | Requirement |
+|---|---|
+| FR-D138.1 | An apostrophe is removed with no space, a hyphen or dash becomes a space (follow-up = follow up), and e-mail and email stay different (extends D28.2). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D28.2 |
+
+#### D139. Unicode and case folding
+| ID | Requirement |
+|---|---|
+| FR-D139.1 | Text is Unicode NFC-normalised and then lowercased with locale-independent toLowerCase(), so non-ASCII tasks compare exactly as lowercased (extends D28.2). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D28.2 |
+
+#### D140. Unresolved due phrase kept
+| ID | Requirement |
+|---|---|
+| FR-D140.1 | An unresolved due phrase stays in the task text and takes part in matching, and only the resolved phrase is removed (extends D48.1). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D48.1 |
+
+#### D141. Empty normalised task
+| ID | Requirement |
+|---|---|
+| FR-D141.1 | A task that normalises to empty is not stored and is reported as an empty action item with file:line (extends D50.1). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D50.1 |
+
+#### D142. One source per line
+| ID | Requirement |
+|---|---|
+| FR-D142.1 | Each (file, line) gives one source, so the same task on two lines of one note gives two sources (extends D3.3). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D3.3 |
+
+#### D143. Null due date
+| ID | Requirement |
+|---|---|
+| FR-D143.1 | A null due date means no date, any dated copy beats undated copies, and ISO YYYY-MM-DD strings are compared (extends D3.4, D68.2). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D3.4 and D68.2 |
+
+#### D144. Done status on merge
+| ID | Requirement |
+|---|---|
+| FR-D144.1 | A done item merged with open copies keeps status done, its due date is the latest over all copies, and a later open copy updates wording and meeting date but not status (extends D3.5, D39.1). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D3.5 and D39.1 |
+
+#### D145. Name comparison for ambiguous and unresolved
+| ID | Requirement |
+|---|---|
+| FR-D145.1 | First name (ambiguous) and name text (unresolved) are compared case-insensitively with whitespace collapsed, and an ambiguous item never merges with a resolved item for the same person (extends D40.2, D68.1). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D40.2 and D68.1 |
+
+#### D146. Owner label keys
+| ID | Requirement |
+|---|---|
+| FR-D146.1 | The labels (no owner), (group), (ambiguous), (unresolved) and a resolved name are distinct keys, and Everyone and Team both store (group) and merge by D40.1 (extends D25.1, D40.1). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D25.1 and D40.1 |
+
+#### D147. Same line, changed text
+| ID | Requirement |
+|---|---|
+| FR-D147.1 | The same file and line with different normalised text is a new incoming item matched by the key rules, and old sources stay (extends D52.1, D13.3). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D52.1 and D13.3 |
+
+#### D148. mergeItem change list
+| ID | Requirement |
+|---|---|
+| FR-D148.1 | mergeItem returns a change list of add, merge or unchanged and never assigns an id, and spec 05 assigns ids in D69.1 order (extends D14.2). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D14.2 |
+
+#### D149. Existing duplicates in store
+| ID | Requirement |
+|---|---|
+| FR-D149.1 | Two stored items with the same key are not merged, and new copies match the lowest id (extends D52.1). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D52.1 |
+
+#### D150. Most recent note
+| ID | Requirement |
+|---|---|
+| FR-D150.1 | Wording and meeting date come from the most recent note as computed from source records (meeting date, then file name), not from read order (extends D39.1, D39.3). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D39.1 and D39.3 |
+
+#### D151. New source counts as merged
+| ID | Requirement |
+|---|---|
+| FR-D151.1 | Adding a new source to an existing item counts as merged, while an unchanged re-ingest does not (extends D30.2). |
+| Source | specs/04-dedupe/plan.md |
+| Amends or extends | D30.2 |
+
+#### D152. Relative store path
+| ID | Requirement |
+|---|---|
+| FR-D152.1 | A relative --store path is resolved against the cwd at call time with path.resolve (extends D17.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D17.2 |
+
+#### D153. Empty store env/flag
+| ID | Requirement |
+|---|---|
+| FR-D153.1 | --store "" and ACTIONTRACK_STORE="" are treated as unset and fall through to the next source (extends D17.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D17.2 |
+
+#### D154. Store path is a directory
+| ID | Requirement |
+|---|---|
+| FR-D154.1 | A store path that is an existing directory is a usage error (exit 2), and a failed mkdir of the parent gives exit 4 (extends D62.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D62.1 |
+
+#### D155. Zero-byte store
+| ID | Requirement |
+|---|---|
+| FR-D155.1 | A zero-byte store file is corrupt (exit 2), since D59.3 covers only an absent file (extends D59.4). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D59.4 |
+
+#### D156. Unknown store keys
+| ID | Requirement |
+|---|---|
+| FR-D156.1 | Unknown keys at the top level or on an item make the store corrupt: exit 2, never overwritten (extends D59.4). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D59.4 |
+
+#### D157. Duplicate ids and nextId
+| ID | Requirement |
+|---|---|
+| FR-D157.1 | Duplicate item ids make the store corrupt (exit 2, never overwritten), and nextId must be greater than every stored id (extends D59.4 and D14.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D59.4 and D14.1 |
+
+#### D158. Legacy v1 store
+| ID | Requirement |
+|---|---|
+| FR-D158.1 | A v1 file without roster or drafts reads them as empty arrays with no error (extends D69.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D69.2 |
+
+#### D159. Roster entry shape
+| ID | Requirement |
+|---|---|
+| FR-D159.1 | Roster entries are {name, email?, meetingDate?}, and meetingDate is required when email is present (extends D56.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D56.2 |
+
+#### D160. itemIds and createdAt types
+| ID | Requirement |
+|---|---|
+| FR-D160.1 | itemIds is number[] and createdAt is an ISO 8601 UTC timestamp string passed in by the caller (extends D51.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D51.1 |
+
+#### D161. Store file format
+| ID | Requirement |
+|---|---|
+| FR-D161.1 | On write the file uses 2-space indent, LF, a trailing newline and UTF-8 without BOM, and a leading BOM is tolerated on read (extends NFR-D3). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | NFR-D3 |
+
+#### D162. Temp file name and cleanup
+| ID | Requirement |
+|---|---|
+| FR-D162.1 | The temp file is items.json.<pid>.<rand>.tmp in the same directory, removed on a failed write in the same run, and stale temps from crashed runs are ignored, never deleted (extends D59.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D59.2 |
+
+#### D163. fsync of temp file
+| ID | Requirement |
+|---|---|
+| FR-D163.1 | The temp file is fsynced before rename and the directory is not fsynced on Windows (extends D59.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D59.2 |
+
+#### D164. Windows rename retry
+| ID | Requirement |
+|---|---|
+| FR-D164.1 | A failed rename on Windows (EPERM, EBUSY) is retried 3 attempts in total with waits of 100 ms then 200 ms, then exit 4 with the old file intact (extends D62.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D62.1 |
+
+#### D165. Id allocation and failed save
+| ID | Requirement |
+|---|---|
+| FR-D165.1 | The pure allocator lives in store/store.ts and ids from a run that fails before saving are not consumed, so output prints ids only after a successful save (extends D14.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D14.1 |
+
+#### D166. No changed-file check on save
+| ID | Requirement |
+|---|---|
+| FR-D166.1 | Save does not check whether the file changed since load, and the overlapping-run risk is stated to the user (extends D59.2). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D59.2 |
+
+#### D167. Owners file errors
+| ID | Requirement |
+|---|---|
+| FR-D167.1 | An unreadable owners file is a warning, malformed JSON or a non-object top level gives one warning and no entries, and an invalid-email entry is skipped with a warning while the rest are kept (extends D56.3). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D56.3 |
+
+#### D168. Owner key case duplicates
+| ID | Requirement |
+|---|---|
+| FR-D168.1 | Owner keys differing only by case or surrounding spaces keep the first entry and report the second as a warning (extends D56.3). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D56.3 |
+
+#### D169. Tool never writes owners.json
+| ID | Requirement |
+|---|---|
+| FR-D169.1 | The tool never writes owners.json (extends D56.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D56.1 |
+
+#### D170. EXIT.INTERNAL constant
+| ID | Requirement |
+|---|---|
+| FR-D170.1 | EXIT.INTERNAL = 4 is added to domain/exit-codes.ts in spec 05's first implementation task, and spec 11 references the same constant (extends D62.1). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | D62.1 |
+
+#### D171. OS file permissions
+| ID | Requirement |
+|---|---|
+| FR-D171.1 | Standard OS permissions apply with no chmod and no encryption, and Windows ACLs are not managed by the tool (extends NFR-SEC5). |
+| Source | specs/05-store/plan.md |
+| Amends or extends | NFR-SEC5 |
+
+#### D172. Same item on re-run
+| ID | Requirement |
+|---|---|
+| FR-D172.1 | A line with the same owner and normalised task as a stored item is the same item, and on a re-run its due date is updated from the newest copy. |
+| Source | specs/06-ingest/plan.md |
+
+#### D173. Removed line keeps item
+| ID | Requirement |
+|---|---|
+| FR-D173.1 | A line removed from a note keeps its item and its source record; nothing is deleted (per D52.1). |
+| Source | specs/06-ingest/plan.md |
+
+#### D174. No-change re-run
+| ID | Requirement |
+|---|---|
+| FR-D174.1 | A re-run with no change does not rewrite the store file. |
+| Source | specs/06-ingest/plan.md |
+
+#### D175. All notes skipped
+| ID | Requirement |
+|---|---|
+| FR-D175.1 | If every .md note is skipped, ingest exits 1 with the skip report and creates the store empty if missing (per D59.3). |
+| Source | specs/06-ingest/plan.md |
+
+#### D176. Missing notes folder exit code
+| ID | Requirement |
+|---|---|
+| FR-D176.1 | A missing or unreadable notes folder exits 2, not 4 (per D20.3). |
+| Source | specs/06-ingest/plan.md |
+
+#### D177. Unreadable note skip reason
+| ID | Requirement |
+|---|---|
+| FR-D177.1 | A note that exists but cannot be read is skipped with reason "unreadable file", the sixth skip reason from spec 01 (spec 01 decision Q-02). |
+| Source | specs/06-ingest/plan.md |
+
+#### D178. Ignored line kinds
+| ID | Requirement |
+|---|---|
+| FR-D178.1 | Ignored line kinds are table-row, action-line, block-quote, code-fence, html-comment and numbered-checkbox; plain prose is not counted, and a checkbox-looking line inside a fence or comment counts once under its own kind. |
+| Source | specs/06-ingest/plan.md |
+
+#### D179. Duplicate line in one note
+| ID | Requirement |
+|---|---|
+| FR-D179.1 | The same owner and task twice in one note is merged and counted as merged. |
+| Source | specs/06-ingest/plan.md |
+
+#### D180. Added vs merged totals
+| ID | Requirement |
+|---|---|
+| FR-D180.1 | Items added equals new ids this run; merged equals lines folded into an existing item, including every line on a re-run, so a second run reports 0 added. |
+| Source | specs/06-ingest/plan.md |
+
+#### D181. Note processing order
+| ID | Requirement |
+|---|---|
+| FR-D181.1 | Notes are processed in plain code-unit, case-sensitive file-name order (per D69.1). |
+| Source | specs/06-ingest/plan.md |
+
+#### D182. Non-.md entries counted
+| ID | Requirement |
+|---|---|
+| FR-D182.1 | Each top-level entry that is not a .md file counts as one ignored file, and a subfolder counts as one and its contents are not read. |
+| Source | specs/06-ingest/plan.md |
+
+#### D183. Read count
+| ID | Requirement |
+|---|---|
+| FR-D183.1 | A note that is not skipped counts as read, even if it has skipped lines. |
+| Source | specs/06-ingest/plan.md |
+
+#### D184. Email conflict rule
+| ID | Requirement |
+|---|---|
+| FR-D184.1 | On an email conflict, ingest warns and keeps the most recent meeting's email; this depends on specs 05 and 09 persisting attendee emails. |
+| Source | specs/06-ingest/plan.md |
+
+#### D185. Store path precedence
+| ID | Requirement |
+|---|---|
+| FR-D185.1 | --store wins over ACTIONTRACK_STORE. |
+| Source | specs/06-ingest/plan.md |
+
+#### D186. No-notes message
+| ID | Requirement |
+|---|---|
+| FR-D186.1 | "No notes found" is printed to stderr and exits 2. |
+| Source | specs/06-ingest/plan.md |
+
+#### D187. Roster match output
+| ID | Requirement |
+|---|---|
+| FR-D187.1 | The roster match is listed as a count plus a file:line list. |
+| Source | specs/06-ingest/plan.md |
+
+#### D188. Roster contents
+| ID | Requirement |
+|---|---|
+| FR-D188.1 | The roster holds only resolved full names from attendees and stored owners, never labels such as (no owner). |
+| Source | specs/06-ingest/plan.md |
+
+#### D189. Corrupt store
+| ID | Requirement |
+|---|---|
+| FR-D189.1 | A corrupt store exits 2 with a clear error (per D59.4). |
+| Source | specs/06-ingest/plan.md |
+
+#### D190. Spec 06 ID references
+| ID | Requirement |
+|---|---|
+| FR-D190.1 | In spec 06, D3 and D4 are FRD decisions; P1, P3, P4, O1, O3 and U6 mean NFR-P1, NFR-P3, NFR-P4, NFR-O1, NFR-O3 and NFR-U6; NFR-D3 is determinism; the spec text itself is not changed. |
+| Source | specs/06-ingest/plan.md |
+
+#### D191. Stdout totals include groups
+| ID | Requirement |
+|---|---|
+| FR-D191.1 | The stdout totals include (group) and (unresolved); spec 06 overrides D30.2. |
+| Source | specs/06-ingest/plan.md |
+| Amends or extends | D30.2 |
+
+#### D192. First occurrence gives id
+| ID | Requirement |
+|---|---|
+| FR-D192.1 | For a line merged within one run, the first occurrence in file and line order gives the id, and later copies merge into it (per D69.1). |
+| Source | specs/06-ingest/plan.md |
+
+#### D193. Undated items order
+| ID | Requirement |
+|---|---|
+| FR-D193.1 | Undated items are listed after all dated items, ordered by id. |
+| Source | specs/07-list/plan.md |
+
+#### D194. Undated never overdue
+| ID | Requirement |
+|---|---|
+| FR-D194.1 | Undated items are never overdue, so they never appear under `--status overdue` (applies D1.2). |
+| Source | specs/07-list/plan.md |
+
+#### D195. JSON output shape
+| ID | Requirement |
+|---|---|
+| FR-D195.1 | `--json` output is a bare array of item objects, with no envelope and keys in the order the spec lists. |
+| Source | specs/07-list/plan.md |
+
+#### D196. dueFlagged in JSON
+| ID | Requirement |
+|---|---|
+| FR-D196.1 | `dueFlagged` in JSON reports the stored flag as it is. |
+| Source | specs/07-list/plan.md |
+
+#### D197. Empty result exit code
+| ID | Requirement |
+|---|---|
+| FR-D197.1 | An empty result exits 0. |
+| Source | specs/07-list/plan.md |
+
+#### D198. Empty table output
+| ID | Requirement |
+|---|---|
+| FR-D198.1 | A table with zero rows prints only `No items match.`, with no header row. |
+| Source | specs/07-list/plan.md |
+
+#### D199. First-name roster matching
+| ID | Requirement |
+|---|---|
+| FR-D199.1 | First-name matching counts the stored roster and item owners, and a first name counts as a person only when a full name exists. |
+| Source | specs/07-list/plan.md |
+
+#### D200. First-name match rule
+| ID | Requirement |
+|---|---|
+| FR-D200.1 | First-name matching is a case-insensitive exact match on the first word of a full name. |
+| Source | specs/07-list/plan.md |
+
+#### D201. Display-width columns
+| ID | Requirement |
+|---|---|
+| FR-D201.1 | Column widths use display width (wide characters count as 2), task text and sources are not truncated, and no new dependency is added. |
+| Source | specs/07-list/plan.md |
+
+#### D202. --due-before accepted forms
+| ID | Requirement |
+|---|---|
+| FR-D202.1 | `--due-before` accepts whatever `parseCliDate` accepts (spec 02 rule 11), including the D10.1 forms. |
+| Source | specs/07-list/plan.md |
+
+#### D203. Rollover boundary
+| ID | Requirement |
+|---|---|
+| FR-D203.1 | Rollover follows D34.1, and a date exactly 6 months before today is not rolled forward (extends D34.1). |
+| Source | specs/07-list/plan.md |
+| Amends or extends | D34.1 |
+
+#### D204. Invalid date input exit
+| ID | Requirement |
+|---|---|
+| FR-D204.1 | An impossible calendar date, an empty `--due-before ""`, or `Feb 29` without a year in a non-leap year exits 2 with the valid forms listed. |
+| Source | specs/07-list/plan.md |
+
+#### D205. --status case-insensitive
+| ID | Requirement |
+|---|---|
+| FR-D205.1 | `--status` values `open`, `done` and `overdue` are accepted in any case. |
+| Source | specs/07-list/plan.md |
+
+#### D206. Repeated flag value
+| ID | Requirement |
+|---|---|
+| FR-D206.1 | A repeated flag takes its last value. |
+| Source | specs/07-list/plan.md |
+
+#### D207. Owner label not a token
+| ID | Requirement |
+|---|---|
+| FR-D207.1 | A literal owner label is not accepted as `--owner`; only the tokens `none|group|ambiguous|unresolved` are. |
+| Source | specs/07-list/plan.md |
+
+#### D208. Missing store with --json
+| ID | Requirement |
+|---|---|
+| FR-D208.1 | `--json` with a missing store prints `[]`, exits 0, and prints no text line. |
+| Source | specs/07-list/plan.md |
+
+#### D209. No stderr on valid run
+| ID | Requirement |
+|---|---|
+| FR-D209.1 | `list` prints no warnings to stderr on a valid run. |
+| Source | specs/07-list/plan.md |
+
+#### D210. Exit 4 for list
+| ID | Requirement |
+|---|---|
+| FR-D210.1 | Exit 4 (unexpected internal error, extends D62.1) applies to `list`, as spec 11 states. |
+| Source | specs/07-list/plan.md |
+| Amends or extends | D62.1 |
+
+#### D211. Already-done message
+| ID | Requirement |
+|---|---|
+| FR-D211.1 | `done` on an already-done item prints the already-done message with id, owner and task, exits 0, and does not rewrite the store (extends FR-D32.3 and Behaviour 4). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | FR-D32.3 and Behaviour 4 |
+
+#### D212. No reopen command
+| ID | Requirement |
+|---|---|
+| FR-D212.1 | Spec 08 has no reopen command, and re-ingest never reopens a done item (confirms D13.2 and D3.5). |
+| Source | specs/08-done/plan.md |
+
+#### D213. One id per call
+| ID | Requirement |
+|---|---|
+| FR-D213.1 | `done` takes exactly one id, and two or more ids is a usage error with exit 2 and nothing changed (extends Behaviour 1). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | Behaviour 1 |
+
+#### D214. Canonical id form
+| ID | Requirement |
+|---|---|
+| FR-D214.1 | Only canonical decimal ids from 1 up are accepted (no sign, leading zero, decimal point or exponent), and anything else exits 2 (extends Behaviour 1 and FR-D32.2). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | Behaviour 1 and FR-D32.2 |
+
+#### D215. Unknown id beyond range
+| ID | Requirement |
+|---|---|
+| FR-D215.1 | An id above the largest assigned id, or beyond the safe integer range, is an unknown id with exit 2 and no separate message (extends FR-D32.2 and D14.2). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | FR-D32.2 and D14.2 |
+
+#### D216. Already-done message content
+| ID | Requirement |
+|---|---|
+| FR-D216.1 | The already-done message includes id, owner and task as the success message does, with free wording (extends FR-D32.3 and D65.3). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | FR-D32.3 and D65.3 |
+
+#### D217. Unknown-id message content
+| ID | Requirement |
+|---|---|
+| FR-D217.1 | The unknown-id message names the id that was not found and states that nothing changed, with free wording (extends FR-D32.2 and D65.3). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | FR-D32.2 and D65.3 |
+
+#### D218. Validation order
+| ID | Requirement |
+|---|---|
+| FR-D218.1 | Validation runs in the order id, then `--today`, then store load, then lookup, and all these failures exit 2 (extends D54.1 and Behaviour 1). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | D54.1 and Behaviour 1 |
+
+#### D219. Source note deleted or changed
+| ID | Requirement |
+|---|---|
+| FR-D219.1 | `done` acts on the store only and exits 0 even if the source note was deleted or changed, and never checks notes (extends FR-D32.1). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | FR-D32.1 |
+
+#### D220. Non-open owner labels
+| ID | Requirement |
+|---|---|
+| FR-D220.1 | `done` works on any stored item, including `(no owner)`, `(group)`, `(ambiguous)` and `(unresolved)`, with follow-up exclusion left to spec 09 (extends FR-D1). |
+| Source | specs/08-done/plan.md |
+| Amends or extends | FR-D1 |
+
+#### D221. Unknown owner name
+| ID | Requirement |
+|---|---|
+| FR-D221.1 | `followup <owner>` with a name that is not an attendee or on the roster exits 2, lists the known owners, and creates no draft. |
+| Source | specs/09-followup/plan.md |
+
+#### D222. Nothing to chase
+| ID | Requirement |
+|---|---|
+| FR-D222.1 | A known owner with no open or overdue items via `followup <owner>` prints a message, creates no draft, and exits 0 (extends D7.3). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D7.3 |
+
+#### D223. Missing store
+| ID | Requirement |
+|---|---|
+| FR-D223.1 | A missing store file exits 2 with a message telling the user to run `ingest` first, and creates no draft. |
+| Source | specs/09-followup/plan.md |
+
+#### D224. Corrupt store
+| ID | Requirement |
+|---|---|
+| FR-D224.1 | A corrupt store exits 2, is never overwritten, and `createDraft` is never called (extends D59.4). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D59.4 |
+
+#### D225. Env var checked first
+| ID | Requirement |
+|---|---|
+| FR-D225.1 | `ACTIONTRACK_GMAIL_MCP_CMD` is checked before any owner is processed or any draft is created, and unset exits 3 naming the variable (extends D74.2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D74.2 |
+
+#### D226. Repeat detection key
+| ID | Requirement |
+|---|---|
+| FR-D226.1 | Repeat detection matches the resolved owner name as an exact string (closes the D19.5 open point for repeat detection). |
+| Source | specs/09-followup/plan.md |
+
+#### D227. --all repeat owner
+| ID | Requirement |
+|---|---|
+| FR-D227.1 | Under `--all` a repeat owner gets a warning and no draft while other owners proceed, and the run exits 1 (extends D51.2 and D53.2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D51.2 and D53.2 |
+
+#### D228. Skipped labels and exit code
+| ID | Requirement |
+|---|---|
+| FR-D228.1 | Skipped label items under `--all` do not change the exit code, and their count is printed (extends D16.3). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D16.3 |
+
+#### D229. Recipient fallback
+| ID | Requirement |
+|---|---|
+| FR-D229.1 | The recipient is the attendee email from the most recent note listing the owner, else the owners file, else the draft has no `to` and a warning is printed (extends D6.3). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D6.3 |
+
+#### D230. Owners file lookup
+| ID | Requirement |
+|---|---|
+| FR-D230.1 | Owners-file lookup uses the full name case-insensitively and an attendee email always wins (extends D18.2 and closes the D6.3 open point). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D18.2 and D6.3 |
+
+#### D231. Greeting first token
+| ID | Requirement |
+|---|---|
+| FR-D231.1 | The greeting uses the first whitespace-separated token of the owner's name, and a one-word name is used whole. |
+| Source | specs/09-followup/plan.md |
+
+#### D232. Source shown as file name
+| ID | Requirement |
+|---|---|
+| FR-D232.1 | The source is shown as the file name only, never the path (extends D58.2 and NFR-SEC2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D58.2 and NFR-SEC2 |
+
+#### D233. Source tie on meeting date
+| ID | Requirement |
+|---|---|
+| FR-D233.1 | When two sources share the latest meeting date, the file name that sorts last in ascending order is shown (extends D58.1 and D39.3). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D58.1 and D39.3 |
+
+#### D234. Warnings omit addresses
+| ID | Requirement |
+|---|---|
+| FR-D234.1 | Warnings name the owner and file, never an email address, and addresses appear only on stdout and in the draft (extends D35.1). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D35.1 |
+
+#### D235. --all total line
+| ID | Requirement |
+|---|---|
+| FR-D235.1 | `--all` with zero drafts still prints the total line ("0 drafts") and the skipped count, and exits 0 unless another warning applies (extends D35.2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D35.2 |
+
+#### D236. drafts timestamps
+| ID | Requirement |
+|---|---|
+| FR-D236.1 | `drafts` timestamps are ISO 8601 strings taken from the injected clock, and the record shape is owned by spec 05. |
+| Source | specs/09-followup/plan.md |
+
+#### D237. Timeout or unparseable draft id
+| ID | Requirement |
+|---|---|
+| FR-D237.1 | A timeout or unparseable draft id prints "A draft may have been created; check Gmail Drafts before running again.", exits 3, and writes no record (extends D75.1 and D76). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D75.1 and D76 |
+
+#### D238. Draft created, record not saved
+| ID | Requirement |
+|---|---|
+| FR-D238.1 | If the draft is created but the `drafts` record cannot be written, the run exits 4 with owner and draft id on stderr and the store is otherwise unchanged (extends D62). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D62 |
+
+#### D239. Subject uses literal (N)
+| ID | Requirement |
+|---|---|
+| FR-D239.1 | The subject uses the literal `(N)` form for every N (extends D19.1 and closes the D74.1 open point for this item). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D19.1 |
+
+#### D240. Greeting always resolved
+| ID | Requirement |
+|---|---|
+| FR-D240.1 | The greeting always has a resolved owner name, because only resolved people get drafts (settled by spec; extends D19.2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D19.2 |
+
+#### D241. --force with nothing to chase
+| ID | Requirement |
+|---|---|
+| FR-D241.1 | `--force` for an owner with nothing to chase creates no draft, prints a message, and exits 0 (extends D7.3). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D7.3 |
+
+#### D242. Env read through Deps
+| ID | Requirement |
+|---|---|
+| FR-D242.1 | The env var check lives in `followup` and reads a value passed through `Deps`, while the real env read stays in `cli/index.ts` (extends D74.2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D74.2 |
+
+#### D243. Unknown first name recipient
+| ID | Requirement |
+|---|---|
+| FR-D243.1 | Items with an unknown first name in the note (D41) get a recipient from the owners file by full name only, as in D230 (extends D41 and D18.2). |
+| Source | specs/09-followup/plan.md |
+| Amends or extends | D41 and D18.2 |
+
+#### D244. Unset gmail MCP command is exit 3
+| ID | Requirement |
+|---|---|
+| FR-D244.1 | An unset ACTIONTRACK_GMAIL_MCP_CMD is a GmailError (exit 3) whose message names the variable (extends FR-D74.2). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | FR-D74.2 |
+
+#### D245. Fixed 60 s connector timeout
+| ID | Requirement |
+|---|---|
+| FR-D245.1 | The 60 s timeout is fixed for the CLI and includes start-up (extends FR-D76.1); a test-only internal constructor option timeoutMs (default 60000) may shorten it, and the CLI never sets it. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | FR-D76.1 |
+
+#### D246. Timeout restarts per call
+| ID | Requirement |
+|---|---|
+| FR-D246.1 | The 60 s timer restarts for each createDraft call, so the limit applies per call, not to a whole run (extends D76.2). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | D76.2 |
+
+#### D247. Gmail MCP command run as shell string
+| ID | Requirement |
+|---|---|
+| FR-D247.1 | ACTIONTRACK_GMAIL_MCP_CMD is run as a shell string (shell: true) so npx and quoted paths work; the value is user-controlled (relates to N3). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D248. One MCP server per createDraft call
+| ID | Requirement |
+|---|---|
+| FR-D248.1 | Each createDraft call starts one MCP server and stops it in finally; the DraftConnector interface gets no close() method (Rule 6). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D249. create_draft contract and adapter rule
+| ID | Requirement |
+|---|---|
+| FR-D249.1 | The connector implements the contract create_draft {to?, subject, body}, is tested with the fake only, and is confirmed in the manual smoke test; if the real server differs, an adapter is added and ALLOWED_MCP_TOOLS does not change (extends FR-D75.2). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | FR-D75.2 |
+
+#### D250. Child inherits parent environment
+| ID | Requirement |
+|---|---|
+| FR-D250.1 | The child MCP server inherits the full parent process.env so it can find its own auth. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D251. Child stderr captured and never shown
+| ID | Requirement |
+|---|---|
+| FR-D251.1 | Child stderr is captured and never shown or stored; errors name only the exit status and the variable (NFR-SEC1). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D252. assertAllowedTool is internal
+| ID | Requirement |
+|---|---|
+| FR-D252.1 | The guard assertAllowedTool(name) is internal to mcp-connector.ts and not part of the package API; tests import it, and the safety test imports ALLOWED_MCP_TOOLS only. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D253. isError result is always a failure
+| ID | Requirement |
+|---|---|
+| FR-D253.1 | An isError: true result is a failure even if it carries a draft id; no draft id is returned and nothing is retried (extends FR-D20.4). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | FR-D20.4 |
+
+#### D254. Missing create_draft detected before call
+| ID | Requirement |
+|---|---|
+| FR-D254.1 | A missing create_draft tool is detected with tools/list before the call and fails with exit 3 (extends FR-D20.4). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | FR-D20.4 |
+
+#### D255. Raw result fallback for structuredContent
+| ID | Requirement |
+|---|---|
+| FR-D255.1 | If the installed SDK type lacks structuredContent, the draft id is read from the raw result object; the contract does not change (relates to the SDK result type check). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D256. Draft id validity check
+| ID | Requirement |
+|---|---|
+| FR-D256.1 | A draft id is valid when it is a non-empty string after trimming; no format check is applied. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D257. Blank to treated as absent
+| ID | Requirement |
+|---|---|
+| FR-D257.1 | A to that is empty or whitespace is treated as absent and omitted from the arguments (extends FR-D6.3). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+| Amends or extends | FR-D6.3 |
+
+#### D258. Test file locations
+| ID | Requirement |
+|---|---|
+| FR-D258.1 | New connector tests go in tests/unit/connector.test.ts with fixture tests/fixtures/fake-gmail-mcp/server.mjs; safety.test.ts is not edited. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D259. Existing safety test names kept
+| ID | Requirement |
+|---|---|
+| FR-D259.1 | Existing safety.test.ts test names stay unchanged; new tests use the [TC-xx] name prefix. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D260. Sequential connector calls
+| ID | Requirement |
+|---|---|
+| FR-D260.1 | Connector calls are sequential, one connector call per owner (spec 09). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D261. Subject and body passed as strings
+| ID | Requirement |
+|---|---|
+| FR-D261.1 | Subject and body are passed as JS strings through MCP JSON with no extra encoding; a non-ASCII test is optional. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D262. No retry on any failure
+| ID | Requirement |
+|---|---|
+| FR-D262.1 | No retry is made on any failure, including transient network errors (FR-F5, rule 8). |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D263. Manual smoke test run by user
+| ID | Requirement |
+|---|---|
+| FR-D263.1 | The user runs T38 with their own server and Gmail account, then confirms the draft is in Drafts and nothing is in Sent; the agent does not run it. |
+| Source | specs/10-gmail-draft-connector/plan.md |
+
+#### D264. Store path precedence
+| ID | Requirement |
+|---|---|
+| FR-D264.1 | `--store` beats `ACTIONTRACK_STORE`, which beats the default path; relates to D17.2 (which does not state the order) and D59.1. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D265. Empty store env var
+| ID | Requirement |
+|---|---|
+| FR-D265.1 | An empty `ACTIONTRACK_STORE` is treated as unset. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D266. Relative store path base
+| ID | Requirement |
+|---|---|
+| FR-D266.1 | A relative `--store` or `ACTIONTRACK_STORE` path is resolved against the current working directory. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D267. JSON output purity
+| ID | Requirement |
+|---|---|
+| FR-D267.1 | With `--json`, stdout holds only the JSON document and warnings and errors stay on stderr (relates to D15.5, NFR-O3). |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D268. No version flag
+| ID | Requirement |
+|---|---|
+| FR-D268.1 | There is no `--version` or `-V`, and an unknown flag exits 2. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D269. No-command behaviour
+| ID | Requirement |
+|---|---|
+| FR-D269.1 | When no command is given, help is printed to stdout and the exit code is 2. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D270. Unknown command or flag
+| ID | Requirement |
+|---|---|
+| FR-D270.1 | An unknown command or unknown flag exits 2. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D271. Impossible --today date
+| ID | Requirement |
+|---|---|
+| FR-D271.1 | `--today` with a valid format but an impossible date (for example `2026-02-30`) exits 2 and the message gives the valid format (relates to D54.1). |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D272. Error and exit-code ownership
+| ID | Requirement |
+|---|---|
+| FR-D272.1 | Commands throw `ActiontrackError` subclasses for errors and may return `ExitCode` only for OK and WARNINGS, and only `cli/index.ts` maps them to exit codes (relates to D20, D62). |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D273. followup owner or --all
+| ID | Requirement |
+|---|---|
+| FR-D273.1 | `followup` with neither or both of `<owner>` and `--all` exits 2 with a message naming the two valid forms (relates to spec 09 items 1-2). |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D274. Gmail MCP command unset
+| ID | Requirement |
+|---|---|
+| FR-D274.1 | `followup` exits 2 with a message naming `ACTIONTRACK_GMAIL_MCP_CMD` when that variable is unset at run time. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D275. EPIPE on stdout
+| ID | Requirement |
+|---|---|
+| FR-D275.1 | EPIPE on stdout exits 0 silently, and any other stdout write error exits 4. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D276. Today is local date
+| ID | Requirement |
+|---|---|
+| FR-D276.1 | "Today" is the system local date and `--today` overrides it, which closes NFR-C4 under D1.3. |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D277. Full task text in list
+| ID | Requirement |
+|---|---|
+| FR-D277.1 | `list` prints full task text with no truncation, as plain aligned columns (relates to D65.2). |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D278. list tie-break
+| ID | Requirement |
+|---|---|
+| FR-D278.1 | `list` breaks equal due dates by ascending id (relates to D15.3, NFR-A9). |
+| Source | specs/11-cli-conventions/plan.md |
+
+#### D279. Default store path
+| ID | Requirement |
+|---|---|
+| FR-D279.1 | The default store is `.actiontrack/items.json` under the working directory (D59.1), and spec 05 owns the exact name. |
+| Source | specs/11-cli-conventions/plan.md |
 
 ### Resolved question index (after D1 to D42)
 **Resolved (FRD):** OQ-01, 02, 03, 05, 07, 08, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 44, 45, 46, 47, 48, 49, 50, 51. NFRD OQ-61, OQ-65 and OQ-70 are resolved.
