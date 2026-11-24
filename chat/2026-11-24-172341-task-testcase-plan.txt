@@ -1,0 +1,607 @@
+ ▐▛███▛█   Claude Code v2.1.331
+▝▜██████▀  Sonnet 5.5 · Claude Team
+ ▝▝   ▝▝   ~\Downloads\notes
+
+
+❯ you are a senior forward deploy engineer Your task is to make scaffolding for 
+  this project.                                                                 
+  make a claude.md explain the architecture of the project (folowing spec       
+  driven development) and make a scaffolding for the project                    
+  If you have any questions ask me using the ask-question tool and add a        
+  recommendation option                                                         
+
+● I'll start by looking at what's already in the repo.
+
+  Searched for 1 pattern, ran 1 shell command (ctrl+o to expand)
+
+● The specs live in docs/ (BRD, FRD, NFRD). I'll read them first.
+
+  Read 3 files (ctrl+o to expand)
+
+● The specs are thorough, but they leave the technology open. I need a few
+  decisions before scaffolding.
+
+● Answered Claude's questions:
+  ⎿  · Which language/runtime should actiontrack use? (Specs leave this open; it
+     must run on Windows, macOS and Linux.) → TypeScript / Node 22
+     · What format should the local item store (.actiontrack/) use? Specs 
+     require a single human-readable file. → JSON file (Recommended)
+     · How should the CLI reach the Gmail MCP connector at runtime? → MCP client
+     over stdio, configured server command (Recommended)
+     · What should the scaffold include beyond CLAUDE.md and the project 
+     skeleton? → Spec-driven structure: specs/ with traceability + test per AC 
+     (Recommended), Initial git commit
+
+● Decisions noted. I'll check the toolchain, then build.
+
+  Ran 2 shell commands (ctrl+o to expand)
+
+● CI wasn't in your selection, so I'm removing it. Next is the source skeleton.
+
+  Searched for 1 pattern, ran 1 shell command · 1 failed (ctrl+o to expand)
+
+● The shell parse failed, so nothing was written. I'll use the Write tool
+  instead.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Write(src\domain\types.ts)
+  ⎿  Wrote 81 lines to src\domain\types.ts
+       1 /** Domain types. Spec refs: FRD section 2, D14, D16, D25, D41, 
+         D42. */
+       2 
+       3 /** Special owner labels (FRD D16, D25, D41). Real people are st
+         ored by full name. */
+       4 export const OWNER_LABELS = {
+       5   none: "(no owner)",
+       6   group: "(group)",
+       7   ambiguous: "(ambiguous)",
+       8   unresolved: "(unresolved)",
+     … +73 lines (ctrl+o to expand)
+
+● Write(src\domain\exit-codes.ts)
+  ⎿  Wrote 8 lines to src\domain\exit-codes.ts
+      1 /** Exit codes (FRD D20). */
+      2 export const EXIT = {
+      3   OK: 0,
+      4   WARNINGS: 1,
+      5   USAGE: 2,
+      6   GMAIL: 3,
+      7 } as const;
+      8 export type ExitCode = (typeof EXIT)[keyof typeof EXIT];
+
+● Write(src\domain\errors.ts)
+  ⎿  Wrote 32 lines to src\domain\errors.ts
+       1 import { EXIT, type ExitCode } from "./exit-codes.js";
+       2 
+       3 /** Error that maps to a CLI exit code and a user-facing message
+         . */
+       4 export class ActiontrackError extends Error {
+       5   constructor(
+       6     message: string,
+       7     readonly exitCode: ExitCode,
+       8   ) {
+       9     super(message);
+     … +23 lines (ctrl+o to expand)
+
+● Write(src\clock.ts)
+  ⎿  Wrote 20 lines to src\clock.ts
+       1 import type { IsoDate } from "./domain/types.js";
+       2 
+       3 /** Injectable "today" so overdue logic and date resolution are 
+         testable (FRD D1.3, NFR-M2). */
+       4 export interface Clock {
+       5   today(): IsoDate;
+       6 }
+       7 
+       8 /** System local date (FRD D1.3). */
+       9 export const systemClock: Clock = {
+     … +11 lines (ctrl+o to expand)
+
+● Write(src\parser\header.ts)
+  ⎿  Wrote 26 lines to src\parser\header.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { Attendee, IsoDate } from "../domain/types.js";
+       3 
+       4 export interface ParsedHeader {
+       5   /** `null` when no date is present at all (filename fallback a
+         pplies, FRD D22.2). */
+       6   date: IsoDate | null;
+       7   /** Present-but-unparseable raw date text: the note is malform
+         ed (FRD D22.1). */
+       8   unparseableDate?: string;
+     … +18 lines (ctrl+o to expand)
+
+● Write(src\parser\items.ts)
+  ⎿  Wrote 24 lines to src\parser\items.ts
+      1 import { NotImplementedError } from "../domain/errors.js";
+      2 import type { SkipReport } from "../domain/types.js";
+      3 
+      4 export interface RawItem {
+      5   line: number;
+      6   done: boolean;
+      7   /** Text after the checkbox marker. */
+      8   text: string;
+      9 }
+     … +15 lines (ctrl+o to expand)
+
+● Write(src\parser\note.ts)
+  ⎿  Wrote 17 lines to src\parser\note.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { Note, SkipReport } from "../domain/types.js";
+       3 
+       4 export type NoteResult = { ok: true; note: Note } | { ok: false;
+          skip: SkipReport };
+       5 
+       6 /**
+       7  * Read one note file. Whole-note skip when: empty, not valid UT
+         F-8, date missing after
+       8  * fallback, or date unparseable (FRD D5.1, D22). Must never thr
+     … +10 lines (ctrl+o to expand)
+
+● Write(src\dates\resolve.ts)
+  ⎿  Wrote 26 lines to src\dates\resolve.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { IsoDate } from "../domain/types.js";
+       3 
+       4 export type DueResolution =
+       5   | { kind: "date"; date: IsoDate; warning?: string }
+       6   | { kind: "none" }
+       7   | { kind: "flagged"; wording: string };
+       8 
+       9 /**
+      10  * Resolve due wording against the MEETING date (FRD D8.1). Rule
+     … +17 lines (~1 KB) (ctrl+o to expand)
+
+● Write(src\owners\resolve.ts)
+  ⎿  Wrote 31 lines to src\owners\resolve.ts
+      1 import { NotImplementedError } from "../domain/errors.js";
+      2 import type { Attendee } from "../domain/types.js";
+      3 
+      4 export type OwnerResolution =
+      5   | { kind: "person"; names: string[]; viaRoster?: boolean }
+      6   | { kind: "none" }
+      7   | { kind: "group" }
+      8   | { kind: "ambiguous"; firstName: string }
+      9   | { kind: "unresolved"; firstName: string };
+     … +22 lines (ctrl+o to expand)
+
+● Write(src\dedupe\normalize.ts)
+  ⎿  Wrote 10 lines to src\dedupe\normalize.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 
+       3 /**
+       4  * Normalised task = lowercase, trailing due phrase (`by|from|on
+         |due ...`) removed,
+       5  * articles a/an/the removed, punctuation removed, spaces collap
+         sed (FRD D28.2, D36.2).
+       6  * Other wording differences keep items separate ("first" vs "up
+         dated" wireframes).
+       7  */
+     … +3 lines (ctrl+o to expand)
+
+● Write(src\dedupe\merge.ts)
+  ⎿  Wrote 15 lines to src\dedupe\merge.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { ActionItem } from "../domain/types.js";
+       3 
+       4 /**
+       5  * Merge a freshly parsed item into the store (FRD D3, D13, D28,
+          D39, D40).
+       6  * Duplicate key = resolved owner + normalised task; ambiguous o
+         wners merge only on the same
+       7  * first name. A merged item keeps ALL sources, the LATEST due d
+         ate, stays done if any copy is
+     … +8 lines (ctrl+o to expand)
+
+● Write(src\store\store.ts)
+  ⎿  Wrote 20 lines to src\store\store.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { StoreFile } from "../domain/types.js";
+       3 
+       4 /** Default store in the working dir; override via `--store` or 
+         ACTIONTRACK_STORE (FRD D17). */
+       5 export const DEFAULT_STORE_PATH = ".actiontrack/items.json";
+       6 export const STORE_ENV = "ACTIONTRACK_STORE";
+       7 
+       8 export function resolveStorePath(_flag: string | undefined, _env
+         : NodeJS.ProcessEnv): string {
+     … +12 lines (ctrl+o to expand)
+● Write(src\email\connector.ts)
+  ⎿  Wrote 18 lines to src\email\connector.ts
+       1 /**
+       2  * The ONLY Gmail surface the app can see. There is deliberately
+          no send method:
+       3  * no code path can send email (RULE-1, NFR-S1, AC-F3). Keep it
+         that way.
+       4  */
+       5 export interface DraftRequest {
+       6   /** Absent when no recipient is known (FRD D6.3). */
+       7   to?: string;
+       8   subject: string;
+     … +10 lines (ctrl+o to expand)
+
+● Write(src\email\mcp-connector.ts)
+  ⎿  Wrote 23 lines to src\email\mcp-connector.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { DraftConnector, DraftRequest, DraftResult } from "
+         ./connector.js";
+       3 
+       4 /** Only this MCP tool may ever be invoked. Anything else is ref
+         used (NFR-S2). */
+       5 export const ALLOWED_MCP_TOOLS = ["create_draft"] as const;
+       6 
+       7 /** Env var holding the stdio command that launches the user's G
+         mail MCP server. */
+     … +16 lines (ctrl+o to expand)
+
+● Write(src\email\followup-template.ts)
+  ⎿  Wrote 14 lines to src\email\followup-template.ts
+       1 import { NotImplementedError } from "../domain/errors.js";
+       2 import type { ActionItem, IsoDate } from "../domain/types.js";
+       3 
+       4 /**
+       5  * Subject `Follow-up: your open action items (N)`, greeting by
+         first name, Overdue list then
+       6  * Open list (task, due, meeting date, source), polite closing,
+         NO signature (FRD D19, D39.3).
+       7  */
+       8 export function renderFollowup(
+     … +6 lines (ctrl+o to expand)
+
+● Next: the CLI wiring, test stubs, fixtures and docs.
+
+● Write(src\cli\deps.ts)
+  ⎿  Wrote 13 lines to src\cli\deps.ts
+       1 import type { Clock } from "../clock.js";
+       2 import type { DraftConnector } from "../email/connector.js";
+       3 
+       4 /** Everything a command needs from the outside world. Tests inj
+         ect fakes (NFR-M2, NFR-M3). */
+       5 export interface Deps {
+       6   clock: Clock;
+       7   /** Lazily created so `ingest`/`list`/`done` never need Gmail.
+          */
+       8   connector: () => DraftConnector;
+     … +5 lines (ctrl+o to expand)
+
+● Write(src\cli\commands\ingest.ts)
+  ⎿  Wrote 17 lines to src\cli\commands\ingest.ts
+       1 import { NotImplementedError } from "../../domain/errors.js";
+       2 import type { ExitCode } from "../../domain/exit-codes.js";
+       3 import type { Deps } from "../deps.js";
+       4 
+       5 export interface IngestOptions {
+       6   folder: string;
+       7   store?: string | undefined;
+       8 }
+       9 
+      10 /**
+     … +7 lines (ctrl+o to expand)
+
+● Write(src\cli\commands\list.ts)
+  ⎿  Wrote 22 lines to src\cli\commands\list.ts
+       1 import { NotImplementedError } from "../../domain/errors.js";
+       2 import type { ExitCode } from "../../domain/exit-codes.js";
+       3 import type { ItemStatus } from "../../domain/types.js";
+       4 import type { Deps } from "../deps.js";
+       5 
+       6 export interface ListOptions {
+       7   owner?: string | undefined;
+       8   status?: ItemStatus | undefined;
+       9   dueBefore?: string | undefined;
+      10   json?: boolean | undefined;
+     … +12 lines (ctrl+o to expand)
+
+● Write(src\cli\commands\done.ts)
+  ⎿  Wrote 13 lines to src\cli\commands\done.ts
+       1 import { NotImplementedError } from "../../domain/errors.js";
+       2 import type { ExitCode } from "../../domain/exit-codes.js";
+       3 import type { Deps } from "../deps.js";
+       4 
+       5 export interface DoneOptions {
+       6   id: number;
+       7   store?: string | undefined;
+       8 }
+       9 
+      10 /** Updates the store only, never the source note (D32.1). Unkno
+     … +4 lines (ctrl+o to expand)
+
+● Write(src\cli\commands\followup.ts)
+  ⎿  Wrote 23 lines to src\cli\commands\followup.ts
+       1 import { NotImplementedError } from "../../domain/errors.js";
+       2 import type { ExitCode } from "../../domain/exit-codes.js";
+       3 import type { Deps } from "../deps.js";
+       4 
+       5 export interface FollowupOptions {
+       6   /** Mutually exclusive with `all` (D7). */
+       7   owner?: string | undefined;
+       8   all?: boolean | undefined;
+       9   force?: boolean | undefined;
+      10   today?: string | undefined;
+     … +13 lines (ctrl+o to expand)
+
+● Write(src\cli\index.ts)
+  ⎿  Wrote 93 lines to src\cli\index.ts
+       1 #!/usr/bin/env node
+       2 import { Command, InvalidArgumentError, Option } from "commander
+         ";
+       3 import { systemClock } from "../clock.js";
+       4 import { ActiontrackError, NotImplementedError } from "../domain
+         /errors.js";
+       5 import { EXIT, type ExitCode } from "../domain/exit-codes.js";
+       6 import { McpDraftConnector, GMAIL_MCP_CMD_ENV } from "../email/m
+         cp-connector.js";
+       7 import { UsageError } from "../domain/errors.js";
+     … +86 lines (ctrl+o to expand)
+
+● The done wiring is clumsy, so I'm simplifying it before moving on.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Tests next: pending stubs per acceptance criterion, plus one real safety test
+  that passes today.
+
+● Write(tests\unit\safety.test.ts)
+  ⎿  Wrote 25 lines to tests\unit\safety.test.ts
+       1 import { readdirSync, readFileSync, statSync } from "node:fs";
+       2 import { join } from "node:path";
+       3 import { describe, expect, it } from "vitest";
+       4 import { ALLOWED_MCP_TOOLS } from "../../src/email/mcp-connector
+         .js";
+       5 
+       6 function sourceFiles(dir: string): string[] {
+       7   return readdirSync(dir).flatMap((name) => {
+       8     const p = join(dir, name);
+       9     return statSync(p).isDirectory() ? sourceFiles(p) : p.endsWi
+     … +17 lines (ctrl+o to expand)
+
+● Write(tests\unit\ingest-parsing.test.ts)
+  ⎿  Wrote 25 lines to tests\unit\ingest-parsing.test.ts
+       1 import { describe, it } from "vitest";
+       2 
+       3 // FRD section 3, D2, D5, D11, D12, D21, D22, D26, D27, D29, D37
+         . Replace each todo with a real test.
+       4 describe("parseHeader / readNote (BR-01, BR-11, E4)", () => {
+       5   it.todo("reads YAML front matter date and attendees (D21.1)");
+       6   it.todo("reads labelled `Date:` / `Attendees:` lines, case-ins
+         ensitive (D21.1)");
+       7   it.todo("accepts `9 September 2026` and `Monday, 14 September 
+         2026` (D21.2)");
+     … +18 lines (ctrl+o to expand)
+
+● Write(tests\unit\dates.test.ts)
+  ⎿  Wrote 26 lines to tests\unit\dates.test.ts
+       1 import { describe, it } from "vitest";
+       2 
+       3 // FRD D1, D8, D9, D10, D33, D34, D36, D38. Worked examples come
+          from the FRD.
+       4 describe("resolveDue (BR-02, RULE-4, AC-I3)", () => {
+       5   it.todo("weekday resolves strictly after the meeting day; Frid
+         ay on a Friday gives next Friday (D8.2)");
+       6   it.todo("tomorrow, EOD (meeting date), EOM and end of month (D
+         9, D33.2)");
+       7   it.todo("next week = Monday of following week (D9.1)");
+     … +19 lines (ctrl+o to expand)
+
+● Write(tests\unit\edge-cases.test.ts)
+  ⎿  Wrote 32 lines to tests\unit\edge-cases.test.ts
+       1 import { describe, it } from "vitest";
+       2 
+       3 // BRD section 8: edge cases E1 to E4 (NFR-M4). One block each.
+       4 describe("E1 duplicates across meetings (BR-08, FR-E1)", () => {
+       5   it.todo("same owner + normalised task merge into one item (D28
+         .1)");
+       6   it.todo("normalisation drops `by ...`, a/an/the, punctuation, 
+         extra spaces (D28.2, D36.2)");
+       7   it.todo("'first' vs 'updated' wireframes stay separate (D28.3,
+          NFR-D5)");
+     … +25 lines (ctrl+o to expand)
+
+● Write(tests\unit\commands.test.ts)
+  ⎿  Wrote 35 lines to tests\unit\commands.test.ts
+       1 import { describe, it } from "vitest";
+       2 
+       3 // FRD sections 4 to 6, D15, D19, D20, D31, D32, D35. Use fixedC
+         lock and a fake DraftConnector.
+       4 describe("list (BR-03, AC-L1..L3)", () => {
+       5   it.todo("default shows open + overdue, sorted by due with unda
+         ted last (D15)");
+       6   it.todo("--status overdue returns only overdue; --status done 
+         returns done (AC-L1)");
+       7   it.todo("--owner + --status combine with AND (AC-L2, D31.4)");
+     … +28 lines (ctrl+o to expand)
+
+● Write(tests\acceptance\sample-notes.test.ts)
+  ⎿  Wrote 18 lines to tests\acceptance\sample-notes.test.ts
+       1 import { describe, it } from "vitest";
+       2 
+       3 // NFRD section 10. Runs the real CLI pipeline against the sampl
+         e `notes/` folder
+       4 // (35 .md + 1 .txt) with a fixed clock and a fake DraftConnecto
+         r. Expected counts must be
+       5 // confirmed against the first working build (NFRD section 10 pr
+         eamble).
+       6 describe("sample notes/ folder acceptance (NFR-A1..A10, N1)", ()
+          => {
+     … +12 lines (ctrl+o to expand)
+
+● Write(tests\fixtures\notes\labelled-basic.md)
+  ⎿  Wrote 12 lines to tests\fixtures\notes\labelled-basic.md
+       1 Date: Monday, 14 September 2026
+       2 Attendees: Priya Nair, Priya Shah, Rahul Mehta, Anita Desai
+       3 
+       4 ## Discussion
+       5 Quote follow-ups.
+       6 
+       7 - [ ] Priya N. to send the revised quote to Acme by Friday
+       8 - [ ] Priya to chase the contract
+       9 - [x] Anita to book the room
+      10 - [ ] Someone to update the CRM notes
+     … +2 lines (ctrl+o to expand)
+
+● Write(tests\fixtures\notes\yaml-basic.md)
+  ⎿  Wrote 8 lines to tests\fixtures\notes\yaml-basic.md
+      1 ---
+      2 date: 2026-09-16
+      3 attendees: [Anita Desai <anita@example.com>, Lena Fischer, Meera
+        Iyer]
+      4 ---
+      5 
+      6 ## Action items
+      7 - [ ] Lena to draft the case study outline by 2026-09-21
+      8 - [ ] Meera to update the pipeline sheet by Friday
+
+● Write(tests\fixtures\notes\traps.md)
+  ⎿  Wrote 20 lines to tests\fixtures\notes\traps.md
+       1 Date: 2026-10-09
+       2 Attendees: Karan Rao, Anita Desai
+       3 
+       4 > - [ ] Karan to ignore this block-quoted line
+       5 
+       6 ```
+       7 - [ ] Anita to ignore this fenced line
+       8 ```
+       9 
+      10 <!-- - [ ] Karan to ignore this comment line -->
+     … +10 lines (ctrl+o to expand)
+● Write(tests\fixtures\notes\bad-date.md)
+  ⎿  Wrote 4 lines to tests\fixtures\notes\bad-date.md
+      1 Date: sometime last week
+      2 Attendees: Karan Rao
+      3 
+      4 - [ ] Karan to never be ingested
+
+● Write(tests\fixtures\README.md)
+  ⎿  Wrote 12 lines to tests\fixtures\README.md
+       1 # Test fixtures
+       2 
+       3 Tiny synthetic notes so unit tests do not depend on the full `no
+         tes/` sample folder.
+       4 
+       5 | File | Exercises |
+       6 |---|---|
+       7 | `notes/labelled-basic.md` | labelled header, long date, ambigu
+         ous Priya/`Priya N.`, done item, no-owner, group, undated |
+       8 | `notes/yaml-basic.md` | YAML front matter, attendee email, wee
+     … +5 lines (ctrl+o to expand)
+
+● Now CLAUDE.md, the traceability file, and the README.
+
+● Write(CLAUDE.md)
+  ⎿  Wrote 110 lines to CLAUDE.md
+       1 # CLAUDE.md — actiontrack
+       2 
+       3 `actiontrack` is a Node 22 / TypeScript CLI that ingests markdow
+         n meeting notes, tracks the action items in them, and creates **
+         Gmail drafts** (never sends) for follow-up. Single user, local m
+         achine, local JSON store.
+       4 
+       5 ## Spec-driven development: the rules
+       6 
+       7 The specs are the source of truth. **Code follows the specs, not
+     … +104 lines (~7 KB) (ctrl+o to expand)
+
+● Write(docs\TRACEABILITY.md)
+  ⎿  Wrote 28 lines to docs\TRACEABILITY.md
+       1 # Traceability: requirement → module → test
+       2 
+       3 Status: `todo` (stub + `it.todo`), `wip`, `done` (tests green).
+         Update in the same change as the code.
+       4 Specs win over code; see `CLAUDE.md` for the workflow.
+       5 
+       6 | Business req | FRD / decisions | Module | Test file | Status |
+       7 |---|---|---|---|---|
+       8 | BR-01 load notes | FR-I1..I4, D2, D12, D21, D26, D27, D29 | `p
+         arser/note.ts`, `parser/items.ts`, `cli/commands/ingest.ts` | `u
+     … +21 lines (~2 KB) (ctrl+o to expand)
+
+● Write(README.md)
+  ⎿  Wrote 27 lines to README.md
+       1 # actiontrack
+       2 
+       3 CLI that reads markdown meeting notes, tracks action items, and
+         creates Gmail **drafts** for follow-up. It never sends email.
+       4 
+       5 ```
+       6 actiontrack ingest <folder>
+       7 actiontrack list [--owner <name>] [--status open|done|overdue] [
+         --due-before <date>] [--json]
+       8 actiontrack done <id>
+     … +19 lines (ctrl+o to expand)
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● Typecheck and tests are green. I'll check that the CLI runs and the build
+  works, then commit.
+
+  Ran 2 shell commands · 1 failed (ctrl+o to expand)
+
+● Git has no identity configured. I'll commit with a one-off identity taken from
+  your account email and leave your git config untouched.
+
+  Ran 1 shell command (ctrl+o to expand)
+
+● The scaffold is built and committed (668d93a). The CLI runs, but none of the
+  four commands is implemented yet. npm run typecheck, npm test and npm run 
+  build all pass, and actiontrack --help lists all four commands. Running a
+  command, such as done 3, prints "Not implemented".
+
+  What's in it
+  - CLAUDE.md sets out the spec-driven rules:
+    - The BRD, FRD and NFRD in docs/ are the source of truth, and a later FRD
+      decision wins over an earlier one.
+    - Every change goes requirement, then test, then code, then traceability
+      update.
+    - If the spec is silent, I stop and ask, then record the answer as a new
+      decision (D43 onward).
+    - It also holds the architecture diagram, the module map, the hard rules
+      (never send email, never crash on bad notes, ISO dates only), conventions,
+      and a suggested build order.
+  - src/ has the commander CLI and one stub per module (parser, owners, dates,
+    dedupe, store, email). Each stub's comment cites the FRD decisions it must
+    satisfy.
+  - tests/ has a pending test for every acceptance criterion: edge cases E1–E4,
+    dates, commands, and the sample-folder checks NFR-A1–A10. Those 79 are
+    placeholders that show as "todo".
+  - Safety test: the one real passing test enforces the never-send rule.
+    DraftConnector has only createDraft, the MCP allow-list is ["create_draft"],
+    and the test scans the source for send calls.
+  - docs/TRACEABILITY.md maps each requirement to its module, its test and a
+    status.
+  - Fixtures are four small test notes in tests/fixtures/notes/ (labelled
+    header, YAML header, trap lines, bad date).
+
+  Decisions to know about
+  - Choices you made: TypeScript on Node 22, a JSON store at
+    .actiontrack/items.json, and an MCP client over stdio. The server command
+    comes from ACTIONTRACK_GMAIL_MCP_CMD.
+  - No CI workflow: I dropped it because you didn't pick it.
+  - Traceability location: it lives in docs/ next to the specs rather than in a
+    new specs/ folder, to avoid moving your files.
+  - Git identity: git had no identity configured, so I committed with your
+    account email and the name darshan.deshmukh, for that commit only. Your git
+    config is unchanged. If you want a different name, run git commit --amend 
+    --reset-author after setting user.name.
+  - Gmail tool name: create_draft is my assumption. Check it against your actual
+    Gmail MCP server before implementing mcp-connector.ts.
+
+  The build order in CLAUDE.md starts at parser/header.
+
+✻ Baked for 4m 41s · done 4:48 PM
+
+❯ push it                                                                       
+
+  Pushed to main, ran 1 shell command (ctrl+o to expand)
+
+● I pushed the scaffold commit (668d93a) to origin/main at
+  darshan-deshmukh-coditas/Memory-notes. main was a new branch on the remote and
+  now tracks origin/main.
+
+  I pushed straight to main instead of making a feature branch first, because
+  the repo had no commits and this was its first push. The push included the
+  sample notes/ folder, so those meeting notes are now on GitHub too.
+
+✻ Cogitated for 18s · done 4:50 PM
+
+※ recap: We're building the actiontrack CLI (meeting-notes action tracker with Gmail drafts) spec-first, and the scaffold with CLAUDE.md is now committed and pushed to main. Next action: implement the first module, parser/header, test-first. (turn off recaps in /config)
