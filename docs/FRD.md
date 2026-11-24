@@ -9,7 +9,7 @@
 | Parent | BRD.md |
 | Companion | NFRD.md |
 | Technology | Not specified. The requirements are technology-agnostic, except for the Gmail MCP connector named in the scenario. |
-| Decisions | v0.5 holds 42 stakeholder decisions (D1 to D42) in section 11. D21 to D35 were made after inspecting the sample `notes/` folder. D36 to D42 close the remaining functional gaps. Where section 11 conflicts with an earlier requirement or an open question, **section 11 wins**, and a later decision wins over an earlier one. |
+| Decisions | v0.6 holds 62 stakeholder decisions (D1 to D62) in section 11. D43 to D62 came from the spec-gap review that produced `specs/`; they close most "Still open" rows below. v0.5 held 42 decisions (D1 to D42). D21 to D35 were made after inspecting the sample `notes/` folder. D36 to D42 close the remaining functional gaps. Where section 11 conflicts with an earlier requirement or an open question, **section 11 wins**, and a later decision wins over an earlier one. |
 
 **Conventions.**
 - "Shall" = a requirement taken from the scenario or directly implied by it.
@@ -635,6 +635,137 @@ The sample folder holds **35 `.md` files and 1 `.txt` file**. D21 to D35 were ch
 | FR-D42.1 | `--owner none`, `--owner group`, `--owner ambiguous` and `--owner unresolved` select the labels `(no owner)`, `(group)`, `(ambiguous)` and `(unresolved)`. |
 | FR-D42.2 | A person literally named one of these words is **not supported**. This is reported as a known limitation. |
 | FR-D42.3 | `(unresolved)` items are, like the other special labels, skipped by `followup --all` and counted. |
+
+### Decisions D43 to D61 (made in the spec-gap review, 2026-11-24)
+
+D43 to D61 were chosen by the requester while the specs in `specs/` were being written. Where they conflict with D1 to D42 they **amend** them, and the amendment is named. Each decision lists the earlier "Still open" point it closes.
+
+#### D43. Spec organisation
+| ID | Requirement |
+|---|---|
+| FR-D43.1 | One `spec.md` per capability under `specs/`, 11 in all: `01-note-parsing`, `02-date-resolution`, `03-owner-resolution`, `04-dedupe`, `05-store`, `06-ingest`, `07-list`, `08-done`, `09-followup`, `10-gmail-draft-connector`, `11-cli-conventions`. |
+| FR-D43.2 | Specs cite decisions as plain `D<n>.<m>` (for example `D1.1`). The prefix `FR-D1` to `FR-D6` is kept only for the `done` command, because `FR-D1.1` would clash with it. |
+
+#### D44. Status is exclusive and computed (resolves the open point in D15)
+| ID | Requirement |
+|---|---|
+| FR-D44.1 | Every item has exactly one status at read time: `done`, `overdue` or `open`. `overdue` is never stored. |
+| FR-D44.2 | `--status open` shows open items that are **not** overdue. `--status overdue` shows overdue items. Plain `list` shows open and overdue (D15.1). |
+
+#### D45. Gmail connector contract (resolves the open point in CLAUDE.md)
+| ID | Requirement |
+|---|---|
+| FR-D45.1 | The tool launches the Gmail MCP server named by `ACTIONTRACK_GMAIL_MCP_CMD` over stdio and calls exactly one tool: `create_draft`. |
+| FR-D45.2 | `create_draft` takes `{ to?, subject, body }` (`to` is omitted when there is no recipient, D6.3) and returns the draft id. |
+| FR-D45.3 | Automated tests use a fake connector only. The real server is a manual check. |
+
+#### D46. `Owner` placeholder and literal `<date>` (extends D25, D8.4)
+| ID | Requirement |
+|---|---|
+| FR-D46.1 | The word `Owner` as an item's owner is a placeholder, stored as `(no owner)`, like `Someone` and `TBD`. |
+| FR-D46.2 | A literal `by <date>` does not resolve. The item is kept with no due date and flagged. |
+| Sample evidence | None. `Owner to remediate finding by <date>` in `2026-10-09-security-review.md` sits inside a fenced code block, so D27 ignores it (it is the NFR-A4 code-fence trap). D46 covers the same wording outside a code fence, and is tested with a fixture. |
+
+#### D47. Weekday abbreviations (extends D8.3)
+| ID | Requirement |
+|---|---|
+| FR-D47.1 | `Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat` and `Sun` resolve like the full weekday names (D8.2). |
+| Sample evidence | `by Mon` (2026-09-18), `by Wed` (2026-09-08), `by Wed 16 Sep` (2026-09-14). |
+
+#### D48. Which phrase is the due date, and when to flag (extends D36, D8.4, D33.3)
+| ID | Requirement |
+|---|---|
+| FR-D48.1 | When a line has several due phrases, the **last one that resolves to a date** is the due date. Only that phrase is removed from the task. A phrase that does not resolve stays in the task text and takes part in duplicate matching. |
+| FR-D48.2 | An item is **flagged** (no date stored) only when a phrase introduced by `by` or `due`, or by `for <month name>`, fails to resolve and no later phrase resolves. |
+| FR-D48.3 | A phrase introduced by `on` or `from` counts as a due phrase only when what follows resolves to a date (`from 9 Oct`, `on 2026-10-14`). Otherwise it is plain task text and is never flagged (`on the demo`, `from Acme`). |
+| Sample evidence | `Sam to cut cloud costs by 10% — proposal by 2026-10-09` has due 2026-10-09 and the task keeps `by 10%`. `by mid-October`, `by <date>` and `for November` are flagged. |
+
+#### D49. Stored task text (extends D39)
+| ID | Requirement |
+|---|---|
+| FR-D49.1 | The task is the text after the owner and `to` (or after `@name:`), with the **resolved** due phrase and the dash or comma that joined it removed. |
+| FR-D49.2 | `Priya N. to send revised quote to Acme — by Friday` stores the task `send revised quote to Acme`. |
+
+#### D50. Unparseable action lines (resolves the open point in D5.2)
+| ID | Requirement |
+|---|---|
+| FR-D50.1 | A checkbox line is skipped and reported at `file:line` **only when it has no text** after the checkbox, for example `- [ ]`. Reason: `empty action item`. |
+| FR-D50.2 | A checkbox line with text but no recognisable owner pattern is **kept** as an item with owner `(no owner)` and the whole text as the task. |
+
+#### D51. Repeat `followup` (resolves the open points in D19.5)
+| ID | Requirement |
+|---|---|
+| FR-D51.1 | The store keeps a `drafts` record per created draft: owner, draft id, time and the ids of the items listed. |
+| FR-D51.2 | A repeat is **any prior record for that owner**. It warns (showing the earlier draft id and date), creates no draft, and counts as a warning (exit 1). |
+| FR-D51.3 | `--force` always creates a new draft and adds another record. The tool never deletes or edits the earlier Gmail draft. |
+
+#### D52. Ingest never deletes (resolves the open point in D13)
+| ID | Requirement |
+|---|---|
+| FR-D52.1 | `ingest` never removes a stored item. A line removed from a note leaves its item unchanged. |
+| FR-D52.2 | A reworded line follows the D28 duplicate rule: it merges with the old item or becomes a new item. |
+
+#### D53. Exit-code precedence and `--all` failures (resolves the open points in D20)
+| ID | Requirement |
+|---|---|
+| FR-D53.1 | When several exit codes apply, the **highest** wins: 3, then 2, then 1, then 0. |
+| FR-D53.2 | `followup --all` **continues** after a failed draft, reports each failure on stderr, and exits 3 at the end. A failed owner gets no `drafts` record. Drafts already created are still reported. |
+
+#### D54. `--today` scope (resolves the open point in D1.3)
+| ID | Requirement |
+|---|---|
+| FR-D54.1 | `--today YYYY-MM-DD` is accepted by **all four commands**. Only ISO format is accepted. An invalid value exits 2 with the valid format. |
+
+#### D55. Encoding (resolves OQ-60)
+| ID | Requirement |
+|---|---|
+| FR-D55.1 | A UTF-8 byte-order mark is stripped. A BOM is not a reason to skip a note. |
+| FR-D55.2 | CRLF and LF line endings are treated alike. A lone CR is not supported. |
+| FR-D55.3 | Bytes that fail UTF-8 decoding skip the note as `not valid UTF-8` (D5.1). |
+
+#### D56. Owners file (resolves the open points in D6, D18)
+| ID | Requirement |
+|---|---|
+| FR-D56.1 | The owners file is `owners.json` in the store directory, shaped `{"Priya Nair": "priya@example.com"}`. It is edited by the user and never written by the tool. |
+| FR-D56.2 | An attendee email beats the file (D18.2). If two notes give different emails for one person, the **most recent meeting's** email is used and a warning is printed (D18.3). |
+| FR-D56.3 | A missing owners file is fine. A malformed one is a warning (exit 1). Drafts are then created without recipients. It is never a crash. |
+
+#### D57. Filename date fallback (resolves the open point in D2.2, D22)
+| ID | Requirement |
+|---|---|
+| FR-D57.1 | The fallback matches only a **leading** `YYYY-MM-DD` at the start of the filename, and it must be a real calendar date. Anything else, such as `untitled.md`, stays malformed. |
+
+#### D58. Source record (resolves the open point in D39)
+| ID | Requirement |
+|---|---|
+| FR-D58.1 | Each item keeps a list of sources, each `{file, meetingDate, line}`. The line is the 1-based line of the checkbox. |
+| FR-D58.2 | The `list` table shows file names only. `list --json` exposes the full source records. |
+
+#### D59. Store location and concurrency (resolves the open points in D17)
+| ID | Requirement |
+|---|---|
+| FR-D59.1 | The default store path is resolved from the **current working directory** on every run. A different directory is a separate store. |
+| FR-D59.2 | Writes are atomic (write then rename). There is no lock file. Overlapping runs are last-writer-wins. |
+| FR-D59.3 | A missing store is empty. `list` prints `No items match.` `ingest` creates it. `done` gives unknown id, exit 2. |
+| FR-D59.4 | A corrupt store is a clear error, exit 2, and is **never overwritten**. |
+
+#### D60. Name forms (resolves the open points in D24, D11.3)
+| ID | Requirement |
+|---|---|
+| FR-D60.1 | An item that names a **full name** not among the note's attendees is accepted as that person when the full name is on the roster. Otherwise it is stored as `(unresolved)` and reported. |
+| FR-D60.2 | Only `&` splits joint owners (D24.3). `A and B to ...` and comma lists are not split. Their owner text is stored as `(unresolved)` and reported. |
+
+#### D61. Roster source (resolves the open point in D23, D41)
+| ID | Requirement |
+|---|---|
+| FR-D61.1 | Notes skipped as malformed contribute **nothing** to the roster. |
+| FR-D61.2 | The roster is rebuilt from the notes read in each ingest, plus the names already in the store from earlier runs. |
+
+#### D62. Unexpected internal error (extends D20, D53)
+| ID | Requirement |
+|---|---|
+| FR-D62.1 | Exit `4`: an unexpected internal error (a bug or an I/O failure such as a full disk), not caused by malformed input. A clear message goes to stderr and the store is left as it was. |
+| FR-D62.2 | Highest code still wins (D53.1), so 4 beats 3, 2 and 1. |
 
 ### Resolved question index (after D1 to D42)
 **Resolved (FRD):** OQ-01, 02, 03, 05, 07, 08, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 44, 45, 46, 47, 48, 49, 50, 51. NFRD OQ-61, OQ-65 and OQ-70 are resolved.
