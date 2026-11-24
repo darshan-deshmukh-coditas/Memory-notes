@@ -5,7 +5,7 @@ The command that wires specs 01 to 05 together: read notes, resolve owners and d
 | Field | Value |
 |---|---|
 | Business reqs | BR-01, BR-02, BR-08 to BR-11 |
-| FRD | FR-I1 to I15, FR-E1 to E4, D13, D20, D29, D30, D35.3, D52, D53, D54, D59 |
+| FRD | FR-I1 to I15, FR-E1 to E4, D13, D20, D29, D30, D35.3, D52, D53, D54, D59, D62, D65, D70 |
 | NFRD | NFR-R1 to R3, D3, D4, P1, P3, P4, O1, O3, U6, NFR-A1 to A9 |
 | Module | `cli/commands/ingest.ts` (uses `parser/*`, `owners/*`, `dates/*`, `dedupe/*`, `store/*`) |
 | Tests | `tests/unit/commands.test.ts`, `tests/unit/edge-cases.test.ts`, `tests/acceptance/sample-notes.test.ts` |
@@ -34,7 +34,8 @@ actiontrack ingest <folder> [--store <path>] [--today <YYYY-MM-DD>]
    - items with `(no owner)`, `(group)`, `(ambiguous)`, `(unresolved)` owners, listed by file and line (D16.4, D25.3)
    - items with no date or an unresolved date (flagged), listed by file and line
    - ignored lines (by kind), ignored files, and roster matches used (D41.1)
-10. Exit code: `0` clean; `1` when anything was skipped or a warning was printed; `2` bad arguments, missing folder, or no notes; `3` is not used by ingest. The highest applicable code wins (D53.1).
+10. Exit code (D70, D53.1): `0` clean; `1` for any of: skipped notes, skipped lines, a weekday-versus-date disagreement, an email conflict, or `(unresolved)` owners; `2` bad arguments, missing folder, or no notes; `4` unexpected internal error (D62); `3` is not used by ingest. The highest applicable code wins. Flagged dates and `(no owner)`, `(group)` and `(ambiguous)` items are listed in the summary but do **not** change the exit code on their own (D70.2).
+11. Summary labels and layout are free wording. Tests assert the numbers and file names, not the wording (D65.3). Skip reasons are the fixed strings in spec 01.
 
 ## Sample folder expectations (NFR-A1 to A9)
 | Check | Expected |
@@ -59,8 +60,6 @@ actiontrack ingest <folder> [--store <path>] [--today <YYYY-MM-DD>]
 - `D35.3` folder with no `.md`: `No notes found`, exit 2
 - `D20.3` missing folder: exit 2
 - `D53.1` highest exit code wins
+- `D70.1` each listed warning gives exit 1
+- `D70.2` a clean note set with only `(no owner)`, `(group)`, `(ambiguous)` items or flagged dates exits 0
 - `NFR-P1` sample folder ingests in under 5 s; `NFR-P3`, `NFR-P4` 500 notes, 5,000 items, 1 MB notes
-
-## Defaults to confirm
-- P16. "Warnings" that make exit code 1: skipped notes, skipped lines, date/weekday disagreement, email conflict, `(unresolved)` owners. Flagged dates and `(ambiguous)`, `(no owner)`, `(group)` items are listed in the summary but do **not** by themselves change the exit code.
-- P28. Summary count labels and layout are not fixed. Tests assert the numbers and the file names, not the exact wording.

@@ -1,6 +1,6 @@
 # specs/
 
-One `spec.md` per capability (FRD D43). Docs in `docs/` stay the source of truth: every decision a spec relies on is in `docs/FRD.md` section 11 (D1 to D62). Specs cite decisions as `D<n>.<m>`.
+One `spec.md` per capability (FRD D43). Docs in `docs/` stay the source of truth: every decision a spec relies on is in `docs/FRD.md` section 11 (D1 to D76). Specs cite decisions as `D<n>.<m>`.
 
 | # | Spec | Covers |
 |---|---|---|
@@ -16,8 +16,8 @@ One `spec.md` per capability (FRD D43). Docs in `docs/` stay the source of truth
 | 10 | [gmail-draft-connector](10-gmail-draft-connector/spec.md) | create-draft-only connector contract |
 | 11 | [cli-conventions](11-cli-conventions/spec.md) | options, streams, exit codes, clock |
 
-## Defaults to confirm
+## Open decisions
 
-Each spec ends with a "Defaults to confirm" section (labelled P1 and up). These are details no document and no answer in the review settled. They are written as a stated default so work is not blocked, but **the requester has not approved them**. Confirm or correct each one, then record it as a decision (D63 onward) in `docs/FRD.md` and delete it from the spec.
+None. Every default that the first draft of the specs listed (P1 to P34) was put to the requester and is now recorded as decisions D63 to D76 in `docs/FRD.md`. If the specs are silent on something, stop and ask (CLAUDE.md), then record the answer as D77 or later.
 
-Types that must change when the specs are implemented: `Source` and `ActionItem` already match; add `itemIds` to `DraftRecord`, add `roster` to `StoreFile`, and add `INTERNAL: 4` to `EXIT`.
+Types that must change when the specs are implemented: `Source` and `ActionItem` already match; add `itemIds` to `DraftRecord`, add `roster` to `StoreFile`, and add `INTERNAL: 4` to `EXIT` (D62).

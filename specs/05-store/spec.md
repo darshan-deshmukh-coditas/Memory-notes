@@ -5,7 +5,7 @@ The one place that reads and writes the persistent file. Nothing else touches it
 | Field | Value |
 |---|---|
 | Business reqs | BR-05 (persistence), BR-02 |
-| FRD | FR-D3 (done persists), D14, D17, D51.1, D56, D58, D59, D61.2 |
+| FRD | FR-D3 (done persists), D14, D17, D51.1, D56, D58, D59, D61.2, D69 |
 | NFRD | NFR-D3, D6, R3, R4, SEC1, SEC5, P3, P4, O3 |
 | Modules | `store/store.ts` (`loadStore`, `saveStore`, `resolveStorePath`, `loadOwnersFile`), types in `domain/types.ts` |
 | Tests | `tests/unit/commands.test.ts` (store section) |
@@ -23,11 +23,11 @@ The one place that reads and writes the persistent file. Nothing else touches it
 
 ## Ids (D14)
 8. Ids are sequential numbers starting at 1, taken from `nextId`. An id never changes and is never reused, even for a merged item.
-9. Within one ingest, ids are assigned in this order: notes by file name, then lines in file order, then people in the order named on a line (so `Anita & Rahul` gives Anita the lower id).
+9. Within one ingest, ids are assigned in this order: notes by file name, then lines in file order, then people in the order named on a line (so `Anita & Rahul` gives Anita the lower id) (D69.1).
 
 ## Reading and writing (D59, NFR-R3)
 10. A missing file is an **empty store** (D59.3): `list` prints `No items match.`, `ingest` creates the file, `done <id>` is an unknown id (exit 2).
-11. A corrupt or unsupported-version file is a clear error, exit 2, and is **never overwritten** (D59.4).
+11. A corrupt file, or one whose `version` is not 1, is a clear error, exit 2, and is **never overwritten** (D59.4, D69.2).
 12. Writes are atomic: write a temporary file in the same directory, then rename over the target. A failed write leaves the previous file intact (NFR-R3). There is no lock. Overlapping runs are last-writer-wins (D59.2).
 13. The store directory is created when needed.
 14. A failure in one note, item or owner never corrupts or loses items already stored (NFR-R3). The store is saved once at the end of a command.
@@ -50,7 +50,5 @@ The one place that reads and writes the persistent file. Nothing else touches it
 - `D51.1` draft record has itemIds
 - `D56.3` missing owners file is fine; malformed is a warning
 - `NFR-SEC5` the file holds no credentials
-
-## Defaults to confirm
-- P14. Item ids within one ingest follow rule 9 (files by name, lines in order, people in the order named).
-- P15. A store at an older or newer `version` than 1 is treated like a corrupt file (rule 11).
+- `D69.1` ids follow file name, line order, then name order on a line
+- `D69.2` a store with `version` other than 1 errors with exit 2 and is not overwritten

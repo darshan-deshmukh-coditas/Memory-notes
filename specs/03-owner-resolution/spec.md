@@ -5,7 +5,7 @@ Decides who an action item belongs to: a full name, or an owner label. This is e
 | Field | Value |
 |---|---|
 | Business reqs | BR-09, BR-10 (E2, E3) |
-| FRD | FR-I11, FR-I12, FR-E2, FR-E3, D4, D11.3, D16, D23, D24, D25, D41, D42, D46, D50, D60, D61 |
+| FRD | FR-I11, FR-I12, FR-E2, FR-E3, D4, D11.3, D16, D23, D24, D25, D41, D42, D46, D50, D60, D61, D67 |
 | NFRD | NFR-A6, A7, A8 |
 | Modules | `owners/resolve.ts` (`parseOwnerPhrase`, `resolveOwner`, `buildRoster`), types in `domain/types.ts` |
 | Tests | `tests/unit/edge-cases.test.ts` (E2, E3) |
@@ -23,8 +23,8 @@ A person literally named `none`, `group`, `ambiguous` or `unresolved` is not sup
 ## Behaviour
 
 ### Step 1: read the owner phrase from the line (D24, D50.2, D60.2)
-1. `<Name> to <task>`: the text before ` to `.
-2. `@name: <task>`: the owner is `name`, capitalised for matching (D24.2).
+1. `<Name> to <task>`: the owner phrase is the text before the **first ` to `**. `to` is lower case, a word of its own, and case-sensitive (D67.1). `Sam to talk to Priya about X` has owner `Sam`.
+2. `@name: <task>`: the owner is the text up to the first colon, matched like any name (D24.2, D67.2).
 3. `<Name> N. to ...`: first name plus a surname initial (D24.1).
 4. `A & B to ...`: **one item per person** (D24.3). Only `&` splits (D60.2). `A and B to ...` and comma lists are not split: the owner text is stored as `(unresolved)` and reported.
 5. `<Name> (with <Other>) to ...`: the owner is `<Name>`. The collaborator stays in the task (D24.4).
@@ -64,7 +64,5 @@ A person literally named `none`, `group`, `ambiguous` or `unresolved` is not sup
 - `D61.1` a skipped note adds nothing to the roster
 - `D4.4`, `D31.3` an ambiguous first name argument errors and lists the choices
 - `D42` the four `--owner` tokens map to the labels
-
-## Defaults to confirm
-- P10. `@name:` takes the text up to the colon; if it is a first name it follows rules 9 to 11.
-- P11. The owner phrase pattern ` to ` is case-sensitive lower case `to`, and the first ` to ` on the line ends the owner phrase.
+- `D67.1` owner is the text before the first lower-case ` to `; `Sam to talk to Priya` has owner Sam
+- `D67.2` `@anita:` owner is the text up to the first colon

@@ -17,7 +17,7 @@ actiontrack done <id> [--store <path>] [--today <YYYY-MM-DD>]
 
 ## Behaviour
 1. `<id>` is the item's permanent id (D14). It must be a whole number of 1 or more; anything else is a usage error, exit 2.
-2. A known open or overdue item is set to done in the store and saved. The message shows the item's id, owner and task (D32.4). Exit 0.
+2. A known open or overdue item is set to done in the store and saved. The message shows the item's id, owner and task (D32.4). The wording is free; tests assert that the id, owner and task appear (D65.3). Exit 0.
 3. An **unknown id** is an error, exit 2, and nothing is changed (D32.2). This includes any id in a missing store (D59.3).
 4. An item that is **already done** prints a message saying so and exits 0, with no change (D32.3).
 5. `done` writes **only** to the store. It never edits the source note (D32.1).
@@ -36,6 +36,3 @@ actiontrack done <id> [--store <path>] [--today <YYYY-MM-DD>]
 - `D3.5` re-ingest does not reopen the item
 - `D59.3` `done` with no store: exit 2
 - `D54.1` invalid `--today` value: exit 2
-
-## Defaults to confirm
-- P31. The confirmation wording is not fixed; tests assert that the id, owner and task appear in the output.

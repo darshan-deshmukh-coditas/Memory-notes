@@ -5,7 +5,7 @@ Turns due wording into a real calendar date, parses dates typed on the command l
 | Field | Value |
 |---|---|
 | Business reqs | BR-02, BR-04 |
-| FRD | FR-I6, FR-L5, D1, D8 to D10, D33, D34, D36, D38, D44, D46, D47, D48, D49, D54 |
+| FRD | FR-I6, FR-L5, D1, D8 to D10, D33, D34, D36, D38, D44, D46, D47, D48, D49, D54, D66 |
 | NFRD | NFR-D2, D3, M2, C4, NFR-A7 |
 | Modules | `dates/resolve.ts` (`resolveDue`, `parseCliDate`, `statusOf`), `clock.ts` |
 | Tests | `tests/unit/dates.test.ts` |
@@ -33,7 +33,7 @@ Turns due wording into a real calendar date, parses dates typed on the command l
 | `from 9 Oct`, `on 2026-10-14`, `due 15 October` | that date | D33.1, D36.1 |
 | `tomorrow` | meeting date + 1 | D8.3 |
 | `EOD` | meeting date | D9.2 |
-| `EOD tomorrow` | meeting date + 1 | D33 (open point in FRD, see Defaults) |
+| `EOD tomorrow` | meeting date + 1 | D66.2 |
 | `EOM`, `end of month` | last day of the meeting's month | D9.3, D33.2 |
 | `next week` | Monday of the following calendar week | D9.1 |
 | `end of next week` | Friday of the following calendar week | D33.2 |
@@ -46,7 +46,10 @@ Worked examples (D33): `2026-09-03` is a Thursday, so `end of next week` is 2026
 8. A date with no year uses the meeting's year. If that lands **more than 6 months before** the meeting date, it moves to the next year.
 
 ### Not resolved (flag, no date)
-9. `03/04` slash dates are never guessed (D10.3). `mid-October`, `for November`, `sometime`, `by <date>` and anything else unlisted do not resolve (D33.3, D46.2, D9 leftovers such as `in 3 days`, `this week`).
+9. `03/04` slash dates are never guessed (D10.3). `mid-October`, `for November`, `sometime`, `by <date>` and anything else unlisted do not resolve (D33.3, D46.2). That includes `in 3 days`, `this week`, `end of week` and `tomorrow morning` (D66.3).
+
+### Case (D66.1)
+9a. Weekday names, month names, `EOD` and `EOM` are matched **case-insensitively**: `by friday` works like `by Friday`.
 
 ### Disagreement (D33.4)
 10. When a weekday and an explicit date disagree (`Wed 17 Sep`), the **explicit date wins** and a warning is returned.
@@ -75,8 +78,6 @@ Worked examples (D33): `2026-09-03` is a Thursday, so `end of next week` is 2026
 - `D38.1` `parseCliDate` year and rollover from today
 - `D1.1`, `D1.2`, `D44.1` status: due today is open, no date is never overdue, exactly one status
 - `D1.3`, `D54.1` `--today` makes results repeatable
-
-## Defaults to confirm
-- P7. Weekday names, month names and `EOD`/`EOM` are matched case-insensitively.
-- P8. `EOD tomorrow` resolves to meeting date + 1 (an FRD "still open" point under D33).
-- P9. Wording in D9 leftovers (`in 3 days`, `this week`, `end of week`, `tomorrow morning`) is flagged, as D9 implies.
+- `D66.1` `by friday` and `by FRIDAY` resolve like `by Friday`
+- `D66.2` `EOD tomorrow` is the meeting date + 1
+- `D66.3` `in 3 days`, `this week`, `end of week`, `tomorrow morning` are flagged

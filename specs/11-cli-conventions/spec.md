@@ -5,7 +5,7 @@ Rules shared by all four commands: names, options, output streams, exit codes, a
 | Field | Value |
 |---|---|
 | Business reqs | BR-01 to BR-07, BR-11 |
-| FRD | D1.3, D17.2, D20, D30.3, D53, D54, D59, D62 |
+| FRD | D1.3, D17.2, D20, D30.3, D53, D54, D59, D62, D65, D70 |
 | NFRD | NFR-U1 to U6, R6, O1, O3, M2, C1, C4, N3 |
 | Modules | `cli/index.ts` (the only place that builds real dependencies and maps errors to exit codes), `cli/deps.ts`, `domain/errors.ts`, `domain/exit-codes.ts`, `clock.ts` |
 | Tests | `tests/unit/commands.test.ts` |
@@ -18,6 +18,7 @@ Rules shared by all four commands: names, options, output streams, exit codes, a
 
 ## Streams (NFR-O3, D30.3)
 5. Results (tables, summaries, JSON, draft lines) go to **stdout**. Warnings and errors go to **stderr**. There is no log file.
+5a. Only the strings fixed by D65 (skip reasons, the `list` table shape) are exact. All other output wording is free, and tests assert content, not wording (D65.3).
 
 ## Exit codes (D20, D53)
 | Code | Meaning |
@@ -49,6 +50,3 @@ When several apply, the **highest** wins (D53.1, D62.2). Failures give a clear m
 - `D20`, `D53.1` exit codes, and highest wins
 - `NFR-M2` a fixed clock gives repeatable overdue results
 - `NFR-C1` the test suite runs on Windows, macOS and Linux
-
-## Defaults to confirm
-- P34. The table is aligned plain text; `list` is the only command with a table (see spec 07).

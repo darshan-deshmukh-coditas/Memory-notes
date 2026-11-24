@@ -9,7 +9,7 @@
 | Parent | BRD.md |
 | Companion | NFRD.md |
 | Technology | Not specified. The requirements are technology-agnostic, except for the Gmail MCP connector named in the scenario. |
-| Decisions | v0.6 holds 62 stakeholder decisions (D1 to D62) in section 11. D43 to D62 came from the spec-gap review that produced `specs/`; they close most "Still open" rows below. v0.5 held 42 decisions (D1 to D42). D21 to D35 were made after inspecting the sample `notes/` folder. D36 to D42 close the remaining functional gaps. Where section 11 conflicts with an earlier requirement or an open question, **section 11 wins**, and a later decision wins over an earlier one. |
+| Decisions | v0.7 holds 76 stakeholder decisions (D1 to D76) in section 11. D43 to D76 came from the spec-gap review that produced `specs/`; they close most "Still open" rows below. v0.5 held 42 decisions (D1 to D42). D21 to D35 were made after inspecting the sample `notes/` folder. D36 to D42 close the remaining functional gaps. Where section 11 conflicts with an earlier requirement or an open question, **section 11 wins**, and a later decision wins over an earlier one. |
 
 **Conventions.**
 - "Shall" = a requirement taken from the scenario or directly implied by it.
@@ -766,6 +766,98 @@ D43 to D61 were chosen by the requester while the specs in `specs/` were being w
 |---|---|
 | FR-D62.1 | Exit `4`: an unexpected internal error (a bug or an I/O failure such as a full disk), not caused by malformed input. A clear message goes to stderr and the store is left as it was. |
 | FR-D62.2 | Highest code still wins (D53.1), so 4 beats 3, 2 and 1. |
+
+### Decisions D63 to D76 (the spec defaults, confirmed by the requester, 2026-11-24)
+
+D63 to D76 settle every "Defaults to confirm" item that was in the first draft of the specs. No such items remain.
+
+#### D63. Header rules (extends D21)
+| ID | Requirement |
+|---|---|
+| FR-D63.1 | Labelled `Date:` and `Attendees:` lines are read only in the lead of the note, **before the first `## ` heading**. |
+| FR-D63.2 | Attendees are separated by **commas only**. In YAML, `attendees:` is `[a, b]` or a `- a` list. |
+| FR-D63.3 | In `Monday, 14 September 2026` the weekday word is **ignored**. |
+
+#### D64. Empty file, comments and code (extends D5.1, D27)
+| ID | Requirement |
+|---|---|
+| FR-D64.1 | A file is **empty** when it has no non-whitespace content. |
+| FR-D64.2 | A multi-line HTML comment is ignored from `<!--` to `-->`. |
+| FR-D64.3 | An **indented code block is not special**: a checkbox line there is still an item (nested items count, D26.1). |
+
+#### D65. Fixed strings and free wording
+| ID | Requirement |
+|---|---|
+| FR-D65.1 | Skip reasons are exactly: `empty file`, `not valid UTF-8`, `missing date`, `unparseable date`, `empty action item`. |
+| FR-D65.2 | The `list` table is plain aligned columns with a header row and no colour. |
+| FR-D65.3 | All other wording is free: email greeting and closing, the "nothing to chase" message, ingest summary labels, the `done` confirmation. Tests assert content (numbers, names, ids, items), not wording. |
+
+#### D66. Date wording leftovers (extends D8 to D10, D33)
+| ID | Requirement |
+|---|---|
+| FR-D66.1 | Weekday names, month names, `EOD` and `EOM` are matched **case-insensitively**. |
+| FR-D66.2 | `EOD tomorrow` resolves to the **meeting date + 1**. |
+| FR-D66.3 | Unlisted wording (`in 3 days`, `this week`, `end of week`, `tomorrow morning`) is **flagged** with no date (D8.4). |
+
+#### D67. Owner phrase (extends D24)
+| ID | Requirement |
+|---|---|
+| FR-D67.1 | The owner phrase is the text before the **first ` to `** (lower-case `to`, a word of its own, case-sensitive). |
+| FR-D67.2 | For `@name:` the owner is the text up to the first colon. A first name then follows the normal first-name rules (D4, D23, D41). |
+
+#### D68. Merge leftovers (extends D40, D3.4)
+| ID | Requirement |
+|---|---|
+| FR-D68.1 | `(unresolved)` items merge on the same label, the same unresolved name text and the same normalised task. |
+| FR-D68.2 | A merged item takes the latest due date if any copy has one, and is then not flagged. It is flagged only when no copy has a date and at least one copy is flagged. |
+
+#### D69. Id order and store version (extends D14, D59)
+| ID | Requirement |
+|---|---|
+| FR-D69.1 | In one ingest, ids are assigned by file name, then line order, then the order people are named on a line (`Anita & Rahul` gives Anita the lower id). |
+| FR-D69.2 | A store whose `version` is not 1 is treated like a corrupt store: clear error, exit 2, never overwritten (D59.4). |
+
+#### D70. Which events make `ingest` exit 1 (extends D20.2, D30.3)
+| ID | Requirement |
+|---|---|
+| FR-D70.1 | Exit 1 follows: skipped notes, skipped lines, a weekday-versus-date disagreement (D33.4), an email conflict (D56.2) and `(unresolved)` owners. |
+| FR-D70.2 | Flagged dates and `(no owner)`, `(group)` and `(ambiguous)` items are listed in the summary but do **not** change the exit code on their own. |
+
+#### D71. `list` display (resolves open points in D15)
+| ID | Requirement |
+|---|---|
+| FR-D71.1 | In the `due` column an undated, unflagged item shows `-` and a flagged item shows `?`. |
+| FR-D71.2 | Rows with equal due dates are ordered by id. |
+| FR-D71.3 | `list --json` with no match prints `[]`, exit 0, with no text line. |
+
+#### D72. `list --owner` with an unknown name (extends D31.3)
+| ID | Requirement |
+|---|---|
+| FR-D72.1 | A name that matches no known person prints `No items match.` and exits 0. It is not an error. |
+
+#### D73. `followup` arguments (extends D7, D42.3)
+| ID | Requirement |
+|---|---|
+| FR-D73.1 | `followup` needs exactly one of `<owner>` or `--all`. Both, or neither, is a usage error, exit 2. |
+| FR-D73.2 | `followup none`, `group`, `ambiguous` or `unresolved` is a usage error, exit 2. The message says there is no one to email and suggests `list --owner <token>`. |
+
+#### D74. `followup` subject count and missing connector (extends D19.1, D20.4)
+| ID | Requirement |
+|---|---|
+| FR-D74.1 | N in the subject is the number of items listed in the email (overdue plus open). |
+| FR-D74.2 | An unset `ACTIONTRACK_GMAIL_MCP_CMD` is a Gmail connector failure, exit 3, with a message that names the variable. It is detected **before any draft is attempted**. |
+
+#### D75. Draft id and the Gmail server (extends D45)
+| ID | Requirement |
+|---|---|
+| FR-D75.1 | The draft id is read from `structuredContent.draftId`, else from the first text block parsed as JSON `{"draftId": "..."}`. Anything else is a connector failure. |
+| FR-D75.2 | The server itself (name, package, auth flow) is outside the specs. The user supplies a command that meets this contract, which may be an adapter around any Gmail MCP server. |
+
+#### D76. Connector timeout (extends D20.4, N2)
+| ID | Requirement |
+|---|---|
+| FR-D76.1 | A single `create_draft` call, including server start-up, that takes longer than **60 seconds** is a connector failure: exit 3, nothing recorded. The value is fixed, not configurable. |
+| FR-D76.2 | Total time for `followup --all` stays unbounded (N2). |
 
 ### Resolved question index (after D1 to D42)
 **Resolved (FRD):** OQ-01, 02, 03, 05, 07, 08, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 44, 45, 46, 47, 48, 49, 50, 51. NFRD OQ-61, OQ-65 and OQ-70 are resolved.

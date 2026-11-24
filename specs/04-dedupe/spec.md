@@ -5,7 +5,7 @@ Decides when two items are the same, and how they merge. This is edge case E1 an
 | Field | Value |
 |---|---|
 | Business reqs | BR-08 (E1) |
-| FRD | FR-I10, FR-E1, D3, D13, D28, D36, D39, D40, D48, D49, D52, D58 |
+| FRD | FR-I10, FR-E1, D3, D13, D28, D36, D39, D40, D48, D49, D52, D58, D68 |
 | NFRD | NFR-D3, D4, D5, NFR-A5, A9 |
 | Modules | `dedupe/normalize.ts` (`normalizeTask`, `dedupeKey`), `dedupe/merge.ts` (`mergeItem`) |
 | Tests | `tests/unit/edge-cases.test.ts` (E1) |
@@ -21,12 +21,12 @@ Decides when two items are the same, and how they merge. This is edge case E1 an
 4. A duplicate has the same **resolved owner** and the same normalised task.
 5. `(no owner)` and `(group)` items merge with the same label and the same normalised task (D40.1).
 6. An `(ambiguous)` item merges only with another `(ambiguous)` item of the **same first name** and the same normalised task (D40.2).
-7. `(unresolved)` items merge on the same label, the same name text and the same normalised task. This follows D40 for the remaining label; see Defaults.
+7. `(unresolved)` items merge on the same label, the same unresolved name text and the same normalised task (D68.1).
 8. The same task for two different owners stays as two items (D28.1).
 
 ### Merging (D3, D39, D58)
 9. A merged item keeps **all sources** (`{file, meetingDate, line}`), no repeats of the same file and line, ordered by meeting date then file name, newest last (D3.3).
-10. The **due date** is the **latest** non-empty due date of the copies (D3.4). If no copy has a date, there is none.
+10. The **due date** is the **latest** non-empty due date of the copies (D3.4). If no copy has a date, there is none. A merged item that has a date is **not flagged**; it is flagged only when no copy has a date and at least one copy is flagged (D68.2).
 11. **Done wins**: if any copy is done, the merged item is done (D3.5, D12 leftover). A later open copy never reopens it.
 12. The displayed **task wording** and the **meeting date for the email** are those of the most recent note, by meeting date, then file name (D39.1, D39.3).
 13. The **id** is the id of the earliest created item; the other copies never get one (D14).
@@ -55,7 +55,5 @@ Decides when two items are the same, and how they merge. This is edge case E1 an
 - `D13.1`, `D13.2` re-ingest is idempotent; ids and done status are kept
 - `D52.1` removing a line from a note leaves the stored item unchanged
 - `D14` merged item keeps the earliest id; ids are never reused
-
-## Defaults to confirm
-- P12. `(unresolved)` items merge on label plus the same name text plus the same normalised task (D40 covers only `(no owner)`, `(group)` and `(ambiguous)`).
-- P13. If one copy is flagged and another has a date, the merged item takes the date and is not flagged. If no copy has a date and any copy is flagged, the merged item is flagged.
+- `D68.1` `(unresolved)` items merge on label, name text and normalised task
+- `D68.2` a dated copy clears a flag; a flag survives only when no copy has a date
